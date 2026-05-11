@@ -165,11 +165,7 @@ class _WelcomeBackground extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0E2B1F),
-            Color(0xFF1B4332),
-            Color(0xFF2D6A4F),
-          ],
+          colors: [Color(0xFF0E2B1F), Color(0xFF1B4332), Color(0xFF2D6A4F)],
         ),
       ),
       child: Stack(
@@ -215,10 +211,7 @@ class _GlowCircle extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }
@@ -250,10 +243,7 @@ class _LogoBadge extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(size * 0.28),
-        child: Image.asset(
-          'assets/logo.png',
-          fit: BoxFit.cover,
-        ),
+        child: Image.asset('assets/logo.png', fit: BoxFit.cover),
       ),
     );
   }
@@ -269,18 +259,9 @@ class _FeatureWrap extends StatelessWidget {
       runSpacing: 12,
       alignment: WrapAlignment.center,
       children: const [
-        _FeatureChip(
-          icon: Icons.spa_rounded,
-          label: 'Pantau kebun',
-        ),
-        _FeatureChip(
-          icon: Icons.water_drop_rounded,
-          label: 'Jadwal siram',
-        ),
-        _FeatureChip(
-          icon: Icons.insights_rounded,
-          label: 'Tips harian',
-        ),
+        _FeatureChip(icon: Icons.spa_rounded, label: 'Pantau kebun'),
+        _FeatureChip(icon: Icons.water_drop_rounded, label: 'Jadwal siram'),
+        _FeatureChip(icon: Icons.insights_rounded, label: 'Tips harian'),
       ],
     );
   }
@@ -299,10 +280,7 @@ class _FeatureChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.12),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
