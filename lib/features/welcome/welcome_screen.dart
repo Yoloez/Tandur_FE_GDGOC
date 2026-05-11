@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
 
@@ -15,7 +16,7 @@ class WelcomeScreen extends StatelessWidget {
   }
 
   void _onDebugLoginTap(BuildContext context) {
-    Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+    context.goNamed(AppRoutes.home);
   }
 
   @override
@@ -230,12 +231,12 @@ class _LogoBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(size * 0.28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.35),
+            color: Colors.white.withOpacity(0.35),
             blurRadius: 30,
             offset: const Offset(0, 12),
           ),
           BoxShadow(
-            color: AppColors.primaryLight.withOpacity(0.3),
+            color: AppColors.primary.withOpacity(0.3),
             blurRadius: 28,
             offset: const Offset(0, 0),
           ),
@@ -243,7 +244,7 @@ class _LogoBadge extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(size * 0.28),
-        child: Image.asset('assets/logo.png', fit: BoxFit.cover),
+        child: Image.asset('assets/favicon.png', fit: BoxFit.cover),
       ),
     );
   }

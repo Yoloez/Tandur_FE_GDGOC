@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:go_router/go_router.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
 
@@ -163,7 +164,7 @@ class _SplashScreenState extends State<SplashScreen>
     await _exitController.forward();
 
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed(AppRoutes.welcome);
+      context.goNamed(AppRoutes.welcome);
     }
   }
 

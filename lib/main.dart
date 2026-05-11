@@ -19,7 +19,7 @@ class TandurApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Tandur',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -32,8 +32,9 @@ class TandurApp extends StatelessWidget {
         fontFamily: 'Georgia',
         useMaterial3: true,
       ),
-      initialRoute: AppRoutes.splash,
-      onGenerateRoute: AppRouter.onGenerateRoute,
+      routerDelegate: AppRouter.router.routerDelegate,
+      routeInformationParser: AppRouter.router.routeInformationParser,
+      routeInformationProvider: AppRouter.router.routeInformationProvider,
     );
   }
 }
