@@ -52,20 +52,27 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
 
   assets:
     - assets/logo.png
 
+  # fonts:
+  #   - family: Georgia
+  #     fonts:
+  #       - asset: fonts/Georgia.ttf
+
 flutter_native_splash:
-  color: "#5B7E3C"
+  color: "#1B4332"
+  color_dark: "#1B4332"
   image: assets/logo.png
   android: true
   ios: true
   web: false
+  fullscreen: true
+  android_gravity: center
+  ios_content_mode: center
+  image_width: 200
 
   # To add assets to your application, add an assets section, like this:
   # assets:
