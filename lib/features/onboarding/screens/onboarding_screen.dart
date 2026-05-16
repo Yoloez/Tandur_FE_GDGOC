@@ -45,13 +45,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
     );
 
-    _slideUp = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _contentController,
-      curve: const Interval(0.1, 0.8, curve: Curves.easeOutCubic),
-    ));
+    _slideUp = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _contentController,
+            curve: const Interval(0.1, 0.8, curve: Curves.easeOutCubic),
+          ),
+        );
   }
 
   void _playEntrance() {
@@ -147,11 +147,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       child: Row(
         children: [
           // Brand
-          Icon(
-            Icons.location_on_outlined,
-            color: AppColors.primary,
-            size: 20,
-          ),
+          Icon(Icons.location_on_outlined, color: AppColors.primary, size: 20),
           const SizedBox(width: 6),
           Text(
             'Tandur',
@@ -198,10 +194,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           // ── Dot indicators ──
-          _DotIndicator(
-            total: _totalPages,
-            current: _currentPage,
-          ),
+          _DotIndicator(total: _totalPages, current: _currentPage),
 
           const SizedBox(height: 24),
 
@@ -217,7 +210,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.onPrimary,
-                  disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.4),
+                  disabledBackgroundColor: AppColors.primary.withValues(
+                    alpha: 0.4,
+                  ),
                   disabledForegroundColor: Colors.white70,
                   elevation: 0,
                   shadowColor: Colors.transparent,
@@ -396,7 +391,7 @@ class _RoleSelectionPage extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
                     child: Image.asset(
-                      'assets/images/onboarding_farm.png',
+                      'assets/images/onboarding_farm.jpg',
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
@@ -582,12 +577,18 @@ class _RoleCard extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: isSelected ? AppColors.primary : Colors.transparent,
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.outlineVariant,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.outlineVariant,
                   width: isSelected ? 0 : 1.5,
                 ),
               ),
               child: isSelected
-                  ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 16,
+                      color: Colors.white,
+                    )
                   : null,
             ),
           ],

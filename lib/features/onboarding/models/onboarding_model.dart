@@ -31,19 +31,19 @@ class RoleOption {
 // ── Onboarding slide data ──
 const List<OnboardingItem> onboardingContents = [
   OnboardingItem(
-    image: 'assets/images/onboarding_farm.png',
+    image: 'assets/images/onboarding_farm.jpg',
     title: 'Jual Hasil Tani Langsung',
     description:
         'Hubungkan petani dan pembeli secara langsung tanpa perantara untuk harga yang lebih adil.',
   ),
   OnboardingItem(
-    image: 'assets/images/onboarding_market.png',
+    image: 'assets/images/onboarding_market.jpg',
     title: 'Produk Segar & Berkualitas',
     description:
         'Dapatkan hasil tani segar langsung dari kebun ke meja makan Anda setiap hari.',
   ),
   OnboardingItem(
-    image: 'assets/images/onboarding_tech.png',
+    image: 'assets/images/onboarding_tech.jpg',
     title: 'Teknologi untuk Pertanian',
     description:
         'Manfaatkan teknologi modern untuk mengelola kebun dan transaksi dengan mudah.',
