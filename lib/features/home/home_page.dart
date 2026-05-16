@@ -410,7 +410,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: _myPlants.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        separatorBuilder: (_, _) => const SizedBox(width: 14),
         itemBuilder: (context, index) {
           final plant = _myPlants[index];
           return GestureDetector(
@@ -587,6 +587,4 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }).toList(),
     );
   }
-
-  
 }

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:go_router/go_router.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
+import 'package:tandur/core/services/onboarding_prefs.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -150,6 +151,9 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _startSequence() async {
+    // Pre-fetch onboarding status during animation to avoid delay at navigation time
+    final isFirstLaunch = OnboardingPrefs.isFirstLaunch();
+
     await Future.delayed(const Duration(milliseconds: 100));
     _bgController.forward();
 
@@ -163,8 +167,15 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 1800));
     await _exitController.forward();
 
+    // Await the pre-fetched result (should be resolved instantly)
+    final firstLaunch = await isFirstLaunch;
+
     if (mounted) {
-      context.goNamed(AppRoutes.welcome);
+      if (firstLaunch) {
+        context.goNamed(AppRoutes.onboarding);
+      } else {
+        context.goNamed(AppRoutes.welcome);
+      }
     }
   }
 
@@ -499,7 +510,7 @@ class _LoadingDotsState extends State<_LoadingDots>
       children: List.generate(3, (i) {
         return AnimatedBuilder(
           animation: _anims[i],
-          builder: (_, __) => Container(
+          builder: (_, _) => Container(
             margin: const EdgeInsets.symmetric(horizontal: 4),
             width: 6,
             height: 6,

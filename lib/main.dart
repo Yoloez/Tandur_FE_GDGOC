@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
+import 'package:tandur/core/services/onboarding_prefs.dart';
 
-void main() {
+// lib/main.dart
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await OnboardingPrefs.reset();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -32,9 +35,8 @@ class TandurApp extends StatelessWidget {
         fontFamily: 'Georgia',
         useMaterial3: true,
       ),
-      routerDelegate: AppRouter.router.routerDelegate,
-      routeInformationParser: AppRouter.router.routeInformationParser,
-      routeInformationProvider: AppRouter.router.routeInformationProvider,
+      // CUKUP TULIS SATU BARIS INI:
+      routerConfig: AppRouter.router,
     );
   }
 }
