@@ -244,7 +244,7 @@ class _LogoBadge extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(size * 0.28),
-        child: Image.asset('assets/favicon.png', fit: BoxFit.cover),
+        child: Image.asset('assets/images/favicon.png', fit: BoxFit.cover),
       ),
     );
   }
