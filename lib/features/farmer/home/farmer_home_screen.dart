@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:tandur/core/constants/color.dart';
+import 'package:tandur/core/routing/app_router.dart';
 import 'providers/farmer_home_provider.dart';
+import 'models/farmer_home_data.dart';
 import 'widgets/farmer_app_bar.dart';
 import 'widgets/sales_summary_card.dart';
 import 'widgets/order_stats_row.dart';
@@ -70,7 +73,25 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
               // ── Main menu ──
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: MainMenuSection(items: _provider.menuItems),
+                child: MainMenuSection(
+                  items: _provider.menuItems.map((item) {
+                    if (item.label == 'Kelola\nProduk') {
+                      return MenuItem(
+                        icon: item.icon,
+                        label: item.label,
+                        onTap: () => context.pushNamed(AppRoutes.farmerManageProducts),
+                      );
+                    }
+                    if (item.label == 'Upload\nProduk') {
+                      return MenuItem(
+                        icon: item.icon,
+                        label: item.label,
+                        onTap: () => context.pushNamed(AppRoutes.farmerUploadProduct),
+                      );
+                    }
+                    return item;
+                  }).toList(),
+                ),
               ),
 
               const SizedBox(height: 24),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tandur/core/constants/color.dart';
+import 'package:tandur/core/routing/app_router.dart';
 
 class FarmerAppBar extends StatelessWidget {
   final String greeting;
@@ -21,25 +23,27 @@ class FarmerAppBar extends StatelessWidget {
       child: Row(
         children: [
           // ── Avatar ──
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.surfaceContainer,
-              border: Border.all(color: AppColors.outlineVariant, width: 1),
-            ),
-            child: ClipOval(
-              child: avatarUrl != null
-                  ? Image.network(avatarUrl!, fit: BoxFit.cover)
-                  : const Icon(
-                      Icons.person_rounded,
-                      color: AppColors.outline,
-                      size: 24,
-                    ),
+          GestureDetector(
+            onTap: () => context.goNamed(AppRoutes.farmerProfile),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.surfaceContainer,
+                border: Border.all(color: AppColors.outlineVariant, width: 1),
+              ),
+              child: ClipOval(
+                child: avatarUrl != null
+                    ? Image.network(avatarUrl!, fit: BoxFit.cover)
+                    : const Icon(
+                        Icons.person_rounded,
+                        color: AppColors.outline,
+                        size: 24,
+                      ),
+              ),
             ),
           ),
-
           const SizedBox(width: 12),
 
           // ── Greeting text ──
@@ -56,7 +60,7 @@ class FarmerAppBar extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Halo, $name!',
+                  '$name!',
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -69,18 +73,21 @@ class FarmerAppBar extends StatelessWidget {
           ),
 
           // ── Notification bell ──
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.surfaceContainerLowest,
-              border: Border.all(color: AppColors.outlineVariant, width: 1),
-            ),
-            child: const Icon(
-              Icons.notifications_none_rounded,
-              color: AppColors.onSurface,
-              size: 22,
+          GestureDetector(
+            onTap: () => context.goNamed(AppRoutes.farmerNotifications),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.surfaceContainerLowest,
+                border: Border.all(color: AppColors.outlineVariant, width: 1),
+              ),
+              child: const Icon(
+                Icons.notifications_none_rounded,
+                color: AppColors.onSurface,
+                size: 22,
+              ),
             ),
           ),
         ],
