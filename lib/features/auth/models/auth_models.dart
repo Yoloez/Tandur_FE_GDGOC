@@ -39,6 +39,23 @@ class RegisterRequest {
   }
 }
 
+/// Data model for the login API request.
+/// Maps to POST `/auth/login`.
+class LoginRequest {
+  final String email;
+  final String pass;
+
+  const LoginRequest({
+    required this.email,
+    required this.pass,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'email': email,
+        'pass': pass,
+      };
+}
+
 /// Generic auth API response wrapper.
 class AuthResponse {
   final bool success;
@@ -52,12 +69,16 @@ class AuthResponse {
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
-    // Backend returns id and email on success.
-    final bool isSuccess = json['id'] != null || json['email'] != null || (json['success'] == true);
+    // Register returns id/email, Login returns access_token
+    final bool isSuccess = json['id'] != null || 
+                           json['email'] != null || 
+                           json['access_token'] != null || 
+                           (json['success'] == true);
+    
     return AuthResponse(
       success: isSuccess,
       message: json['message'] as String?,
-      token: json['token'] as String?,
+      token: (json['access_token'] ?? json['token']) as String?,
     );
   }
 }

@@ -19,7 +19,27 @@ class AuthService {
       final message = _extractErrorMessage(e);
       return AuthResponse(success: false, message: message);
     } catch (e) {
-      return AuthResponse(
+      return const AuthResponse(
+        success: false,
+        message: 'Terjadi kesalahan. Coba lagi nanti.',
+      );
+    }
+  }
+
+  /// POST /auth/login
+  static Future<AuthResponse> login(LoginRequest request) async {
+    try {
+      final response = await ApiClient.dio.post(
+        'auth/login',
+        data: request.toJson(),
+      );
+
+      return AuthResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      final message = _extractErrorMessage(e);
+      return AuthResponse(success: false, message: message);
+    } catch (e) {
+      return const AuthResponse(
         success: false,
         message: 'Terjadi kesalahan. Coba lagi nanti.',
       );
