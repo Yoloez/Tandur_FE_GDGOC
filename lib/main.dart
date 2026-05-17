@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
 import 'package:tandur/core/services/onboarding_prefs.dart';
@@ -7,7 +8,8 @@ import 'package:tandur/core/services/onboarding_prefs.dart';
 // lib/main.dart
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await OnboardingPrefs.reset();
+  await dotenv.load(fileName: '.env');
+  // await OnboardingPrefs.reset();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,

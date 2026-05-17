@@ -1,300 +1,223 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
+import 'package:tandur/features/auth/login/login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
-  void _onGoogleTap(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Sign in Google belum diaktifkan.'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  void _onLoginTap(BuildContext context) {
+    showLoginModal(context);
   }
 
-  void _onDebugLoginTap(BuildContext context) {
-    context.goNamed(AppRoutes.home);
+  void _onRegisterTap(BuildContext context) {
+    context.pushNamed(AppRoutes.register);
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final logoSize = size.shortestSide < 360 ? 92.0 : 120.0;
-
     return Scaffold(
-      backgroundColor: AppColors.primaryDark,
-      body: Stack(
-        children: [
-          const _WelcomeBackground(),
-          SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _LogoBadge(size: logoSize),
-                        const SizedBox(height: 28),
-                        Text(
-                          'Selamat Datang di Tandur',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.6,
-                          ),
+      backgroundColor: AppColors.surface,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 32),
+
+                      // ── Brand identity ──
+                      const _BrandHeader(),
+
+                      const SizedBox(height: 28),
+
+                      // ── Hero image with floating badges ──
+                      const _HeroSection(),
+
+                      const SizedBox(height: 28),
+
+                      // ── Headline & tagline ──
+                      const _TextContent(),
+
+                      const SizedBox(height: 32),
+
+                      // ── Action buttons ──
+                      _ActionButtons(
+                        onLogin: () => _onLoginTap(context),
+                        onRegister: () => _onRegisterTap(context),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // ── Legal footer ──
+                      Text(
+                        'Dengan melanjutkan, Anda menyetujui Ketentuan & Privasi kami.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.outline,
+                          height: 1.5,
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Kelola kebun, catat progres, dan terima tips tanam setiap hari.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.75),
-                            fontSize: 14,
-                            height: 1.5,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                        const SizedBox(height: 22),
-                        const _FeatureWrap(),
-                        const SizedBox(height: 32),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () => _onGoogleTap(context),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: AppColors.textPrimary,
-                              elevation: 8,
-                              shadowColor: Colors.black.withOpacity(0.3),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14,
-                                horizontal: 18,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const _GoogleBadge(),
-                                const SizedBox(width: 12),
-                                Flexible(
-                                  child: Text(
-                                    'Daftar sekarang dengan Google',
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.2,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: () => _onDebugLoginTap(context),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14,
-                                horizontal: 18,
-                              ),
-                              side: BorderSide(
-                                color: Colors.white.withOpacity(0.4),
-                                width: 1,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: const Text(
-                              'Masuk (Debug)',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          'Dengan melanjutkan, kamu menyetujui Syarat dan Kebijakan.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
-                            fontSize: 11,
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+
+                      const SizedBox(height: 24),
+                    ],
                   ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _WelcomeBackground extends StatelessWidget {
-  const _WelcomeBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0E2B1F), Color(0xFF1B4332), Color(0xFF2D6A4F)],
+                ),
+              ),
+            );
+          },
         ),
       ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -80,
-            right: -60,
-            child: _GlowCircle(
-              size: 220,
-              color: AppColors.primaryLight.withOpacity(0.18),
-            ),
-          ),
-          Positioned(
-            bottom: -40,
-            left: -30,
-            child: _GlowCircle(
-              size: 180,
-              color: AppColors.accent.withOpacity(0.12),
-            ),
-          ),
-          Positioned(
-            top: 120,
-            left: -40,
-            child: _GlowCircle(
-              size: 140,
-              color: Colors.white.withOpacity(0.05),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
 
-class _GlowCircle extends StatelessWidget {
-  final double size;
-  final Color color;
-
-  const _GlowCircle({required this.size, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-    );
-  }
-}
-
-class _LogoBadge extends StatelessWidget {
-  final double size;
-
-  const _LogoBadge({required this.size});
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ── Brand Header
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class _BrandHeader extends StatelessWidget {
+  const _BrandHeader();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(size * 0.28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.white.withOpacity(0.35),
-            blurRadius: 30,
-            offset: const Offset(0, 12),
+    return Column(
+      children: [
+        // ── Logo circle ──
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
-            blurRadius: 28,
-            offset: const Offset(0, 0),
+          child: Padding(
+            padding: const EdgeInsets.all(
+              2.0,
+            ), // Beri padding sedikit agar gambar tidak mentok ke pinggir lingkaran
+            child: Image.asset(
+              'assets/images/tandur-logo-no-bg.png', // Sesuaikan dengan nama file gambarmu
+              fit: BoxFit.cover,
+            ),
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(size * 0.28),
-        child: Image.asset('assets/images/favicon.png', fit: BoxFit.cover),
-      ),
-    );
-  }
-}
+        ),
 
-class _FeatureWrap extends StatelessWidget {
-  const _FeatureWrap();
+        const SizedBox(height: 12),
 
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      alignment: WrapAlignment.center,
-      children: const [
-        _FeatureChip(icon: Icons.spa_rounded, label: 'Pantau kebun'),
-        _FeatureChip(icon: Icons.water_drop_rounded, label: 'Jadwal siram'),
-        _FeatureChip(icon: Icons.insights_rounded, label: 'Tips harian'),
+        // ── App name ──
+        Text(
+          'Tandur',
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: AppColors.onSurface,
+            letterSpacing: -0.3,
+          ),
+        ),
+
+        const SizedBox(height: 4),
+
+        // ── Subtitle ──
+        Text(
+          'Digital Agronomy Ecosystem',
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: AppColors.outline,
+            letterSpacing: 0.2,
+          ),
+        ),
       ],
     );
   }
 }
 
-class _FeatureChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _FeatureChip({required this.icon, required this.label});
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ── Hero Section with floating badges
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class _HeroSection extends StatelessWidget {
+  const _HeroSection();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    return SizedBox(
+      height: 260,
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Icon(icon, size: 16, color: Colors.white),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.2,
+          // ── Main hero image ──
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    blurRadius: 30,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'assets/images/welcome_hero.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.agriculture_rounded,
+                          size: 64,
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+
+          // ── "Verified Fresh" badge ──
+          Positioned(
+            top: 12,
+            right: 12,
+            child: _FloatingBadge(
+              icon: Icons.verified_rounded,
+              iconColor: AppColors.primary,
+              label: 'Verified Fresh',
+              backgroundColor: AppColors.surfaceContainerLowest,
+            ),
+          ),
+
+          // ── "Direct Supply" badge ──
+          Positioned(
+            bottom: 12,
+            left: 12,
+            child: _FloatingBadge(
+              icon: Icons.local_shipping_rounded,
+              iconColor: AppColors.primaryContainer,
+              label: 'Direct Supply',
+              backgroundColor: AppColors.surfaceContainerLowest,
             ),
           ),
         ],
@@ -303,29 +226,171 @@ class _FeatureChip extends StatelessWidget {
   }
 }
 
-class _GoogleBadge extends StatelessWidget {
-  const _GoogleBadge();
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ── Floating Badge
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class _FloatingBadge extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final Color backgroundColor;
+
+  const _FloatingBadge({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.backgroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 26,
-      height: 26,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.surfaceVariant, width: 1),
+        color: backgroundColor.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: const Center(
-        child: Text(
-          'G',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: iconColor),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.onSurface,
+              letterSpacing: 0.1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ── Text Content
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class _TextContent extends StatelessWidget {
+  const _TextContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          'Panen Segar untuk Anda',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: AppColors.onSurface,
+            height: 1.25,
+            letterSpacing: -0.3,
           ),
         ),
-      ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Menghubungkan petani lokal langsung dengan Anda melalui aplikasi Tandur.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.onSurfaceVariant,
+              height: 1.6,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ── Action Buttons
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class _ActionButtons extends StatelessWidget {
+  final VoidCallback onLogin;
+  final VoidCallback onRegister;
+
+  const _ActionButtons({required this.onLogin, required this.onRegister});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // ── Primary: Masuk ──
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: onLogin,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.onPrimary,
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Masuk',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward_rounded, size: 20),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        // ── Secondary: Daftar ──
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: OutlinedButton(
+            onPressed: onRegister,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.onSurface,
+              side: const BorderSide(
+                color: AppColors.outlineVariant,
+                width: 1.5,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: Text(
+              'Daftar',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.onSurface,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
