@@ -14,10 +14,26 @@ class FarmerBottomNav extends StatelessWidget {
   const FarmerBottomNav({super.key, required this.currentIndex});
 
   static const _items = [
-    _NavItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
-    _NavItem(icon: Icons.storefront_outlined, activeIcon: Icons.storefront_rounded, label: 'Market'),
-    _NavItem(icon: Icons.notifications_none_rounded, activeIcon: Icons.notifications_rounded, label: 'Notifications'),
-    _NavItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: 'Profile'),
+    _NavItem(
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+      label: 'Beranda',
+    ),
+    _NavItem(
+      icon: Icons.storefront_outlined,
+      activeIcon: Icons.storefront_rounded,
+      label: 'Pasar',
+    ),
+    _NavItem(
+      icon: Icons.notifications_none_rounded,
+      activeIcon: Icons.notifications_rounded,
+      label: 'Notifikasi',
+    ),
+    _NavItem(
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
+      label: 'Profil',
+    ),
   ];
 
   void _onTap(BuildContext context, int index) {
@@ -71,7 +87,9 @@ class FarmerBottomNav extends StatelessWidget {
                         width: isActive ? 24 : 0,
                         margin: const EdgeInsets.only(bottom: 6),
                         decoration: BoxDecoration(
-                          color: isActive ? AppColors.primary : Colors.transparent,
+                          color: isActive
+                              ? AppColors.primary
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -90,8 +108,12 @@ class FarmerBottomNav extends StatelessWidget {
                         item.label,
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                          color: isActive ? AppColors.primary : AppColors.outline,
+                          fontWeight: isActive
+                              ? FontWeight.w600
+                              : FontWeight.w500,
+                          color: isActive
+                              ? AppColors.primary
+                              : AppColors.outline,
                         ),
                       ),
                     ],
