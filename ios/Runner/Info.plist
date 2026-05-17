@@ -24,6 +24,10 @@
 		<string>????</string>
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Akses galeri untuk mengunggah foto produk</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Gunakan kamera untuk mengambil foto produk</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>UIApplicationSceneManifest</key>

@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class BuyerProfileScreen extends StatelessWidget {
+  const BuyerProfileScreen({super.key});
 
   void _onLogoutTap(BuildContext context) {
     context.goNamed(AppRoutes.welcome);
