@@ -76,7 +76,7 @@ class RegisterFormStep extends StatelessWidget {
           const SizedBox(height: 28),
 
           // ── Required fields ──
-          _buildLabel('Nama Lengkap'),
+          _buildRequiredLabel('Nama Lengkap'),
           const SizedBox(height: 8),
           _buildTextField(
             controller: nameController,
@@ -85,7 +85,7 @@ class RegisterFormStep extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          _buildLabel('Email'),
+          _buildRequiredLabel('Email'),
           const SizedBox(height: 8),
           _buildTextField(
             controller: emailController,
@@ -95,7 +95,7 @@ class RegisterFormStep extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          _buildLabel('Password'),
+          _buildRequiredLabel('Password'),
           const SizedBox(height: 8),
           _buildTextField(
             controller: passwordController,
@@ -203,8 +203,9 @@ class RegisterFormStep extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onPrimary,
-                disabledBackgroundColor:
-                    AppColors.primary.withValues(alpha: 0.5),
+                disabledBackgroundColor: AppColors.primary.withValues(
+                  alpha: 0.5,
+                ),
                 elevation: 0,
                 shadowColor: Colors.transparent,
                 shape: RoundedRectangleBorder(
@@ -426,10 +427,7 @@ class RegisterFormStep extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: AppColors.primary,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
     );
@@ -473,11 +471,30 @@ class RegisterFormStep extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: AppColors.primary,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
+      ),
+    );
+  }
+
+  Widget _buildRequiredLabel(String text) {
+    return RichText(
+      text: TextSpan(
+        text: text,
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppColors.onSurface,
+        ),
+        children: const [
+          TextSpan(
+            text: ' *',
+            style: TextStyle(
+              color: AppColors.error,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
