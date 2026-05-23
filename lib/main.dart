@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
-import 'package:tandur/core/services/onboarding_prefs.dart';
+
+import 'package:tandur/features/auth/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 // lib/main.dart
 Future<void> main() async {
@@ -16,7 +18,12 @@ Future<void> main() async {
       statusBarIconBrightness: Brightness.light,
     ),
   );
-  runApp(const TandurApp());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider.value(value: AuthProvider.instance)],
+      child: const TandurApp(),
+    ),
+  );
 }
 
 class TandurApp extends StatelessWidget {

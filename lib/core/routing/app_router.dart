@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tandur/features/buyer/widgets/app_shell.dart';
 import 'package:tandur/features/buyer/home/buyer_home_page.dart';
+import 'package:tandur/features/auth/providers/auth_provider.dart';
 import 'package:tandur/features/auth/login/login_screen.dart';
 import 'package:tandur/features/farmer/home/farmer_home_screen.dart';
 import 'package:tandur/features/farmer/market/farmer_market_screen.dart';
@@ -16,6 +17,9 @@ import 'package:tandur/features/farmer/manage_products/manage_products_screen.da
 import 'package:tandur/features/farmer/upload_product/upload_product_screen.dart';
 import 'package:tandur/features/splash/splash_screen.dart';
 import 'package:tandur/features/welcome/welcome_screen.dart';
+import 'package:tandur/features/buyer/cart/cart_screen.dart';
+import 'package:tandur/features/buyer/checkout/checkout_screen.dart';
+import 'package:tandur/features/buyer/market/buyer_market_screen.dart';
 
 class AppRoutes {
   static const String splash = 'splash';
@@ -34,13 +38,45 @@ class AppRoutes {
 
   // ── Buyer routes ──
   static const String buyerHome = 'buyer-home';
+  static const String buyerMarket = 'buyer-market';
   static const String buyerProfile = 'buyer-profile';
   static const String productDetail = 'product-detail';
+  static const String buyerCart = 'buyer-cart';
+  static const String buyerCheckout = 'buyer-checkout';
 }
 
 class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/',
+    refreshListenable: AuthProvider.instance,
+    redirect: (context, state) {
+      final auth = AuthProvider.instance;
+
+      // Let Splash Screen always show initially so the animation can play.
+      // The Splash screen handles the initial routing after its animation.
+      if (state.uri.path == '/') return null;
+
+      if (auth.isInitializing) return null;
+
+      final isAuthRoute = state.uri.path == '/login' ||
+          state.uri.path == '/register' ||
+          state.uri.path == '/welcome' ||
+          state.uri.path == '/onboarding';
+
+      if (auth.isAuthenticated) {
+        // If logged in, prevent accessing auth routes
+        if (isAuthRoute) {
+          return auth.userRole == 'petani' ? '/farmer/home' : '/buyer/home';
+        }
+      } else {
+        // If not logged in, prevent accessing protected routes
+        if (!isAuthRoute) {
+          return '/welcome';
+        }
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         name: AppRoutes.splash,
@@ -78,13 +114,16 @@ class AppRouter {
                 curve: Curves.easeInOut,
               ),
               child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.05),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                )),
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.05),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
                 child: child,
               ),
             );
@@ -105,13 +144,16 @@ class AppRouter {
                 curve: Curves.easeInOut,
               ),
               child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.04),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                )),
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.04),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
                 child: child,
               ),
             );
@@ -127,13 +169,16 @@ class AppRouter {
           child: const RegisterScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(1, 0),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              )),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: child,
             );
           },
@@ -152,23 +197,35 @@ class AppRouter {
             child: ProductDetailScreen(productId: productId),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.08),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                )),
-                child: FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
-              );
-            },
+                  return SlideTransition(
+                    position:
+                        Tween<Offset>(
+                          begin: const Offset(0, 0.08),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        ),
+                    child: FadeTransition(opacity: animation, child: child),
+                  );
+                },
             transitionDuration: const Duration(milliseconds: 350),
           );
         },
+      ),
+
+      // ── Buyer Cart (no bottom nav) ──
+      GoRoute(
+        name: AppRoutes.buyerCart,
+        path: '/buyer-cart',
+        builder: (context, state) => const CartScreen(),
+      ),
+      GoRoute(
+        name: AppRoutes.buyerCheckout,
+        path: '/buyer-checkout',
+        builder: (context, state) => const CheckoutScreen(),
       ),
 
       // ── Farmer manage products (no bottom nav) ──
@@ -224,6 +281,11 @@ class AppRouter {
             name: AppRoutes.buyerHome,
             path: '/buyer/home',
             builder: (context, state) => const BuyerHomeScreen(),
+          ),
+          GoRoute(
+            name: AppRoutes.buyerMarket,
+            path: '/buyer/market',
+            builder: (context, state) => const BuyerMarketScreen(),
           ),
           GoRoute(
             name: AppRoutes.buyerProfile,
