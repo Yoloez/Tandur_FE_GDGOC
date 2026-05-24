@@ -21,18 +21,18 @@ class ProductMeta {
     return ProductMeta(
       total: json['total'] as int? ?? 0,
       page: json['page'] as int? ?? 1,
-      limit: json['limit'] as int? ?? 5,
+      limit: json['limit'] as int? ?? 8,
       totalPages: json['totalPages'] as int? ?? 1,
     );
   }
 
-  static const empty = ProductMeta(total: 0, page: 1, limit: 5, totalPages: 1);
+  static const empty = ProductMeta(total: 0, page: 1, limit: 8, totalPages: 1);
 }
 
 class BuyerMarketService {
   const BuyerMarketService._();
 
-  static const int _pageLimit = 5;
+  static const int _pageLimit = 8;
 
   /// GET /categories — shared with farmer upload feature.
   static Future<List<ProductCategory>> fetchCategories() async {

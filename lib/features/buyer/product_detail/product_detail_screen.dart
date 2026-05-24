@@ -186,14 +186,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       backgroundColor: AppColors.surface,
       body: Stack(
         children: [
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Hero image ──
-                ProductHeroImage(image: product.image),
+          CustomScrollView(
+            slivers: [
+              // ── Hero image (now a SliverAppBar) ──
+              ProductHeroImage(image: product.image, productId: widget.productId),
 
-                Padding(
+              SliverToBoxAdapter(
+                child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,12 +233,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                       // ── Reviews ──
                       ReviewsSection(reviews: product.reviews),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 120), // Bottom padding for bottom bar
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
 
           // ── Success overlay ──
