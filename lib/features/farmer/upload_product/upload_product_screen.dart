@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/utils/image_picker_helper.dart';
+import 'package:tandur/features/farmer/upload_product/providers/upload_product_provider.dart';
 
 /// Full-page form for adding a new farmer product.
 ///
@@ -33,12 +34,11 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
   final _priceController = TextEditingController();
   final _stockController = TextEditingController();
 
-  final List<File> _images = [];
+  final _provider = UploadProductProvider.instance;
+  final List<File> _selectedImages = [];
 
-  String _selectedCategory = 'Sayuran';
   String _selectedUnit = 'kg';
 
-  static const _categories = ['Sayuran', 'Buah', 'Benih', 'Lainnya'];
   static const _units = ['kg', 'ikat', 'pack', 'buah', 'liter'];
 
   @override
@@ -50,72 +50,42 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
     super.dispose();
   }
 
-  void _onPickPhoto() {
-    if (_images.length >= 5) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Maksimal 5 foto produk.'),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-      return;
-    }
-
-    showModalBottomSheet(
+  Future<void> _onPickPhoto() async {
+    final source = await showModalBottomSheet<ImageSource>(
       context: context,
+      backgroundColor: AppColors.surfaceContainerLowest,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Pilih Sumber Foto',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.onSurface,
-                ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: const Text('Kamera'),
+                onTap: () => Navigator.of(context).pop(ImageSource.camera),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined),
-              title: const Text('Kamera'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Galeri'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.gallery);
-              },
-            ),
-          ],
-        ),
-      ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Galeri'),
+                onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+              ),
+            ],
+          ),
+        );
+      },
     );
-  }
 
-  Future<void> _pickImage(ImageSource source) async {
+    if (source == null) return;
+
     final file = await ImagePickerHelper.pickImage(source: source);
-    if (file != null) {
-      setState(() {
-        _images.add(file);
-      });
-    }
-  }
+    if (!mounted) return;
 
-  void _onRemovePhoto(int index) {
-    setState(() {
-      _images.removeAt(index);
-    });
+    if (file != null) {
+      setState(() => _selectedImages.add(file));
+    }
   }
 
   void _onGenerateAI() {
@@ -139,28 +109,54 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
     Navigator.of(context).pop();
   }
 
-  void _onPublish() {
-    // TODO: Validate + API call
-    if (_nameController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Nama produk wajib diisi.'),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: AppColors.error,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+  Future<void> _onPublish() async {
+    final name = _nameController.text.trim();
+    final description = _descController.text.trim();
+    final stock = int.tryParse(_stockController.text.trim());
+    final price = int.tryParse(_priceController.text.trim());
+
+    if (name.isEmpty) {
+      _showError('Nama produk wajib diisi.');
+      return;
+    }
+    if (stock == null || stock <= 0) {
+      _showError('Stok harus diisi dengan angka valid.');
+      return;
+    }
+    if (_selectedImages.isEmpty) {
+      _showError('Foto produk wajib diunggah.');
+      return;
+    }
+    if (_provider.selectedCategory == null) {
+      _showError('Pilih kategori produk.');
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Produk berhasil disimpan!'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    final success = await _provider.submitProduct(
+      namaProduk: name,
+      deskripsi: description,
+      stok: stock,
+      tipeStok: _selectedUnit,
+      photos: _selectedImages,
+      harga: price,
     );
-    Navigator.of(context).pop();
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Produk berhasil disimpan!'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      Navigator.of(context).pop();
+    } else {
+      _showError(_provider.errorMessage ?? 'Gagal menyimpan produk.');
+    }
   }
 
   @override
@@ -288,7 +284,11 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.auto_awesome, size: 14, color: AppColors.primary),
+                  const Icon(
+                    Icons.auto_awesome,
+                    size: 14,
+                    color: AppColors.primary,
+                  ),
                   const SizedBox(width: 5),
                   Text(
                     'AI Tip: Gunakan cahaya\nalami',
@@ -308,129 +308,89 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
         const SizedBox(height: 12),
 
         // ── Upload area ──
-        if (_images.isEmpty)
-          GestureDetector(
-            onTap: _onPickPhoto,
-            child: Container(
-              width: double.infinity,
-              height: 160,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppColors.outlineVariant,
-                  style: BorderStyle.solid,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryFixed.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.add_a_photo_outlined,
-                      size: 24,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Ketuk untuk Ambil Foto',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Maksimal 5 foto • JPG, PNG',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+        GestureDetector(
+          onTap: _onPickPhoto,
+          child: Container(
+            width: double.infinity,
+            height: 160,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.outlineVariant,
+                style: BorderStyle.solid,
               ),
             ),
-          )
-        else
-          SizedBox(
-            height: 120,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _images.length < 5 ? _images.length + 1 : _images.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                if (index == _images.length) {
-                  return GestureDetector(
-                    onTap: _onPickPhoto,
-                    child: Container(
-                      width: 120,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerLowest,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.outlineVariant,
-                          style: BorderStyle.solid,
+            child: _selectedImages.isEmpty
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryFixed.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
                         ),
-                      ),
-                      child: const Center(
-                        child: Icon(
+                        child: const Icon(
                           Icons.add_a_photo_outlined,
-                          color: AppColors.outline,
+                          size: 24,
+                          color: AppColors.primary,
                         ),
                       ),
-                    ),
-                  );
-                }
-
-                return Stack(
-                  children: [
-                    Container(
-                      width: 120,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.outlineVariant,
-                          width: 1,
-                        ),
-                        image: DecorationImage(
-                          image: FileImage(_images[index]),
-                          fit: BoxFit.cover,
+                      const SizedBox(height: 12),
+                      Text(
+                        'Ketuk untuk Ambil Foto',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.onSurface,
                         ),
                       ),
-                    ),
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: GestureDetector(
-                        onTap: () => _onRemovePhoto(index),
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.black54,
-                            shape: BoxShape.circle,
+                      const SizedBox(height: 4),
+                      Text(
+                        'Maksimal 5 foto • JPG, PNG',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  )
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.file(_selectedImages.first, fit: BoxFit.cover),
+                        Container(
+                          alignment: Alignment.bottomCenter,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.4),
+                              ],
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.close_rounded,
-                            size: 16,
-                            color: Colors.white,
+                          child: Text(
+                            '${_selectedImages.length} foto dipilih • Ketuk untuk tambah',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                );
-              },
-            ),
+                  ),
           ),
+        ),
       ],
     );
   }
@@ -439,36 +399,71 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
   // Category chips
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Widget _buildCategoryChips() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: _categories.map((cat) {
-        final isSelected = _selectedCategory == cat;
-        return GestureDetector(
-          onTap: () => setState(() => _selectedCategory = cat),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.primary : Colors.transparent,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isSelected
-                    ? AppColors.primary
-                    : AppColors.outlineVariant,
+    return ListenableBuilder(
+      listenable: _provider,
+      builder: (context, _) {
+        if (_provider.isLoadingCategories) {
+          return const SizedBox(
+            height: 36,
+            child: Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
               ),
             ),
+          );
+        }
+
+        final categories = _provider.categories;
+        if (categories.isEmpty) {
+          return GestureDetector(
+            onTap: _provider.loadCategories,
             child: Text(
-              cat,
+              'Gagal memuat kategori. Ketuk untuk retry.',
               style: GoogleFonts.inter(
                 fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? AppColors.onPrimary : AppColors.onSurface,
+                color: AppColors.error,
               ),
             ),
-          ),
+          );
+        }
+
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: categories.map((cat) {
+            final isSelected = _provider.selectedCategory?.id == cat.id;
+            return GestureDetector(
+              onTap: () => _provider.setSelectedCategory(cat),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.outlineVariant,
+                  ),
+                ),
+                child: Text(
+                  cat.nama,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isSelected ? AppColors.onPrimary : AppColors.onSurface,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 
@@ -484,7 +479,11 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
           onTap: _onGenerateAI,
           child: Row(
             children: [
-              const Icon(Icons.auto_awesome, size: 14, color: AppColors.primary),
+              const Icon(
+                Icons.auto_awesome,
+                size: 14,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 4),
               Text(
                 'Gunakan AI',
@@ -563,7 +562,10 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
         ),
         filled: true,
         fillColor: AppColors.surfaceContainerLowest,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.outlineVariant),
@@ -652,12 +654,7 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
                 color: AppColors.onSurface,
               ),
               items: _units
-                  .map(
-                    (u) => DropdownMenuItem(
-                      value: u,
-                      child: Text(u),
-                    ),
-                  )
+                  .map((u) => DropdownMenuItem(value: u, child: Text(u)))
                   .toList(),
               onChanged: (val) {
                 if (val != null) setState(() => _selectedUnit = val);
@@ -733,76 +730,104 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
   // Bottom action bar
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Widget _buildBottomBar() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        border: Border(
-          top: BorderSide(
-            color: AppColors.outlineVariant.withValues(alpha: 0.3),
+    return ListenableBuilder(
+      listenable: _provider,
+      builder: (context, _) {
+        final isSubmitting = _provider.isSubmitting;
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest,
+            border: Border(
+              top: BorderSide(
+                color: AppColors.outlineVariant.withValues(alpha: 0.3),
+              ),
+            ),
           ),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            // ── Draft button ──
-            OutlinedButton(
-              onPressed: _onSaveDraft,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.onSurface,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 14,
-                ),
-                side: const BorderSide(color: AppColors.outlineVariant),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: Text(
-                'Draft',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 12),
-
-            // ── Publish button ──
-            Expanded(
-              child: ElevatedButton(
-                onPressed: _onPublish,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.onPrimary,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                // ── Draft button ──
+                OutlinedButton(
+                  onPressed: isSubmitting ? null : _onSaveDraft,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.onSurface,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
+                    ),
+                    side: const BorderSide(color: AppColors.outlineVariant),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    'Draft',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                child: Text(
-                  'Simpan Produk',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+
+                const SizedBox(width: 12),
+
+                // ── Publish button ──
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: isSubmitting ? null : _onPublish,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.onPrimary,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            'Simpan Produk',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // Shared helpers
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.error,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  // Category is now handled via API (kategoriId from provider)
+
   Widget _buildLabel(String text) {
     return Text(
       text,
@@ -834,7 +859,10 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
         ),
         filled: true,
         fillColor: AppColors.surfaceContainerLowest,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.outlineVariant),
