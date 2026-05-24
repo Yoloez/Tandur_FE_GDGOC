@@ -51,7 +51,7 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
   // ────────────────────────────────────────────────
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Row(
         children: [
           Expanded(
@@ -102,10 +102,10 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
 
   // ────────────────────────────────────────────────
   Widget _buildCategoryRow() {
-    return SizedBox(
-      height: 48,
-      child: _provider.isLoadingCategories
-          ? const Center(
+    return _provider.isLoadingCategories
+        ? const SizedBox(
+            height: 40,
+            child: Center(
               child: SizedBox(
                 width: 18,
                 height: 18,
@@ -114,10 +114,13 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
                   color: AppColors.primary,
                 ),
               ),
-            )
-          : ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+            ),
+          )
+        : SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // "Semua" chip (no filter)
                 _CategoryChip(
@@ -138,7 +141,7 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
                 ),
               ],
             ),
-    );
+          );
   }
 
   // ────────────────────────────────────────────────
@@ -170,21 +173,18 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
                   crossAxisSpacing: 14,
                   childAspectRatio: 0.62,
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final product = _provider.products[index];
-                    return _MarketProductCard(
-                      product: product,
-                      onTap: () {
-                        context.pushNamed(
-                          AppRoutes.productDetail,
-                          pathParameters: {'id': product.id},
-                        );
-                      },
-                    );
-                  },
-                  childCount: _provider.products.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final product = _provider.products[index];
+                  return _MarketProductCard(
+                    product: product,
+                    onTap: () {
+                      context.pushNamed(
+                        AppRoutes.productDetail,
+                        pathParameters: {'id': product.id},
+                      );
+                    },
+                  );
+                }, childCount: _provider.products.length),
               ),
             ),
             if (_provider.totalPages > 1)
@@ -418,10 +418,10 @@ class _CategoryChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : AppColors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isSelected
                 ? AppColors.primary
@@ -432,7 +432,7 @@ class _CategoryChip extends StatelessWidget {
           label,
           style: GoogleFonts.inter(
             fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             color: isSelected ? Colors.white : AppColors.onSurfaceVariant,
           ),
         ),
