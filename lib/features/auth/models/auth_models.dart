@@ -14,16 +14,24 @@ class RegisterRequest {
   final String pass;
   final String role; // "petani" or "pembeli"
   final String namaLengkap;
-  final String? noTelp;
-  final String? alamat;
+  final String? nomorTelepon;
+  final String? alamatLengkap;
+  final double? latitude;
+  final double? longitude;
+  final String? formattedAddress;
+  final String? googlePlaceId;
 
   const RegisterRequest({
     required this.email,
     required this.pass,
     required this.role,
     required this.namaLengkap,
-    this.noTelp,
-    this.alamat,
+    this.nomorTelepon,
+    this.alamatLengkap,
+    this.latitude,
+    this.longitude,
+    this.formattedAddress,
+    this.googlePlaceId,
   });
 
   Map<String, dynamic> toJson() {
@@ -33,8 +41,12 @@ class RegisterRequest {
       'role': role,
       'namaLengkap': namaLengkap,
     };
-    if (noTelp != null && noTelp!.isNotEmpty) data['noTelp'] = noTelp;
-    if (alamat != null && alamat!.isNotEmpty) data['alamat'] = alamat;
+    if (nomorTelepon != null && nomorTelepon!.isNotEmpty) data['nomorTelepon'] = nomorTelepon;
+    if (alamatLengkap != null && alamatLengkap!.isNotEmpty) data['alamatLengkap'] = alamatLengkap;
+    if (latitude != null) data['latitude'] = latitude;
+    if (longitude != null) data['longitude'] = longitude;
+    if (formattedAddress != null && formattedAddress!.isNotEmpty) data['formattedAddress'] = formattedAddress;
+    if (googlePlaceId != null && googlePlaceId!.isNotEmpty) data['googlePlaceId'] = googlePlaceId;
     return data;
   }
 }
@@ -79,6 +91,51 @@ class AuthResponse {
       success: isSuccess,
       message: json['message'] as String?,
       token: (json['access_token'] ?? json['token']) as String?,
+    );
+  }
+}
+
+/// Data model for the user profile.
+class UserModel {
+  final String id;
+  final String email;
+  final String role;
+  final String namaLengkap;
+  final String? nomorTelepon;
+  final String? alamatLengkap;
+  final String? fotoProfil;
+  final double? latitude;
+  final double? longitude;
+  final String? formattedAddress;
+
+  const UserModel({
+    required this.id,
+    required this.email,
+    required this.role,
+    required this.namaLengkap,
+    this.nomorTelepon,
+    this.alamatLengkap,
+    this.fotoProfil,
+    this.latitude,
+    this.longitude,
+    this.formattedAddress,
+  });
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    final profile = json['profile'] as Map<String, dynamic>? ?? {};
+    final location = json['location'] as Map<String, dynamic>? ?? {};
+
+    return UserModel(
+      id: json['id']?.toString() ?? '',
+      email: json['email'] ?? '',
+      role: json['role'] ?? '',
+      namaLengkap: profile['namaLengkap'] ?? '',
+      nomorTelepon: profile['nomorTelepon'],
+      alamatLengkap: profile['alamatLengkap'],
+      fotoProfil: profile['fotoProfil'],
+      latitude: location['latitude'] != null ? double.tryParse(location['latitude'].toString()) : null,
+      longitude: location['longitude'] != null ? double.tryParse(location['longitude'].toString()) : null,
+      formattedAddress: location['formattedAddress'],
     );
   }
 }

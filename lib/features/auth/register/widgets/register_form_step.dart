@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tandur/core/constants/color.dart';
 
 /// Step 2: Registration form — required fields + optional sections.
@@ -17,6 +19,10 @@ class RegisterFormStep extends StatelessWidget {
   final VoidCallback onNavigateToLogin;
   final bool isLoading;
   final String? errorMessage;
+  final File? profilePhoto;
+  final VoidCallback onPickPhoto;
+  final LatLng? selectedLocation;
+  final VoidCallback onPickLocation;
 
   const RegisterFormStep({
     super.key,
@@ -33,6 +39,10 @@ class RegisterFormStep extends StatelessWidget {
     required this.onNavigateToLogin,
     required this.isLoading,
     this.errorMessage,
+    required this.profilePhoto,
+    required this.onPickPhoto,
+    this.selectedLocation,
+    required this.onPickLocation,
   });
 
   @override
@@ -125,6 +135,79 @@ class RegisterFormStep extends StatelessWidget {
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
           ),
+          const SizedBox(height: 20),
+
+          // ── Map Location (Optional) ──
+          _buildLabel(
+            selectedRole == 'petani'
+                ? 'Titik Beli (Opsional)'
+                : 'Titik Kirim (Opsional)',
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: onPickLocation,
+            child: Container(
+              height: selectedLocation != null ? 140 : null,
+              padding: selectedLocation == null
+                  ? const EdgeInsets.symmetric(horizontal: 16, vertical: 16)
+                  : null,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.outlineVariant),
+              ),
+              child: selectedLocation != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(13),
+                      child: IgnorePointer(
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: selectedLocation!,
+                            zoom: 15,
+                          ),
+                          markers: {
+                            Marker(
+                              markerId: const MarkerId('preview'),
+                              position: selectedLocation!,
+                              icon: BitmapDescriptor.defaultMarkerWithHue(
+                                BitmapDescriptor.hueGreen,
+                              ),
+                            ),
+                          },
+                          zoomControlsEnabled: false,
+                          myLocationButtonEnabled: false,
+                          mapToolbarEnabled: false,
+                        ),
+                      ),
+                    )
+                  : Row(
+                      children: [
+                        const Icon(
+                          Icons.map_outlined,
+                          color: AppColors.outline,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Pilih lokasi di peta',
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.textHint,
+                            ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          color: AppColors.outline,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+
           const SizedBox(height: 20),
 
           _buildLabel('Alamat (Opsional)'),
@@ -291,7 +374,9 @@ class RegisterFormStep extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Image.asset(
-          'assets/images/register_hero.webp',
+          selectedRole == 'pembeli'
+              ? 'assets/images/buyer_register.webp'
+              : 'assets/images/register_hero.webp',
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) => Container(
             color: AppColors.surfaceContainerLow,
@@ -312,47 +397,58 @@ class RegisterFormStep extends StatelessWidget {
     return Center(
       child: Column(
         children: [
-          Stack(
-            children: [
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainer,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.outlineVariant,
-                    width: 1.5,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.person_outline_rounded,
-                  size: 40,
-                  color: AppColors.outline,
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 30,
-                  height: 30,
+          GestureDetector(
+            onTap: onPickPhoto,
+            child: Stack(
+              children: [
+                Container(
+                  width: 88,
+                  height: 88,
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: AppColors.surfaceContainer,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.surfaceContainerLowest,
-                      width: 2,
+                      color: AppColors.outlineVariant,
+                      width: 1.5,
+                    ),
+                    image: profilePhoto != null
+                        ? DecorationImage(
+                            image: FileImage(profilePhoto!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: profilePhoto == null
+                      ? const Icon(
+                          Icons.person_outline_rounded,
+                          size: 40,
+                          color: AppColors.outline,
+                        )
+                      : null,
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.surfaceContainerLowest,
+                        width: 2,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt_rounded,
+                      size: 14,
+                      color: AppColors.onPrimary,
                     ),
                   ),
-                  child: const Icon(
-                    Icons.camera_alt_rounded,
-                    size: 14,
-                    color: AppColors.onPrimary,
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           Text(

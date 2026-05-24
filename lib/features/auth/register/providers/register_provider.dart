@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tandur/features/auth/models/auth_models.dart';
 import 'package:tandur/features/auth/services/auth_service.dart';
 
@@ -9,12 +11,16 @@ class RegisterProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   bool _registrationSuccess = false;
+  File? _profilePhoto;
+  LatLng? _selectedLocation;
 
   String? get selectedRole => _selectedRole;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get registrationSuccess => _registrationSuccess;
   bool get hasRole => _selectedRole != null;
+  File? get profilePhoto => _profilePhoto;
+  LatLng? get selectedLocation => _selectedLocation;
 
   String get roleLabel {
     switch (_selectedRole) {
@@ -33,9 +39,21 @@ class RegisterProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setProfilePhoto(File? photo) {
+    _profilePhoto = photo;
+    notifyListeners();
+  }
+
+  void setLocation(LatLng? location) {
+    _selectedLocation = location;
+    notifyListeners();
+  }
+
   void clearRole() {
     _selectedRole = null;
     _errorMessage = null;
+    _profilePhoto = null;
+    _selectedLocation = null;
     notifyListeners();
   }
 
@@ -86,11 +104,17 @@ class RegisterProvider extends ChangeNotifier {
       pass: password,
       role: _selectedRole ?? 'pembeli',
       namaLengkap: name.trim(),
-      noTelp: phone?.trim(),
-      alamat: address?.trim(),
+      nomorTelepon: phone?.trim(),
+      alamatLengkap: address?.trim(),
+      latitude: _selectedLocation?.latitude,
+      longitude: _selectedLocation?.longitude,
+      formattedAddress: address?.trim(),
     );
 
-    final response = await AuthService.register(request);
+    final response = await AuthService.register(
+      request,
+      profilePhoto: _profilePhoto,
+    );
 
     _isLoading = false;
 

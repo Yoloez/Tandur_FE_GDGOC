@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
+import 'package:tandur/core/utils/image_picker_helper.dart';
+import 'package:tandur/core/widgets/location_picker_screen.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart';
+import 'dart:async';
 import 'providers/register_provider.dart';
 import 'widgets/role_selection_step.dart';
 import 'widgets/register_form_step.dart';
@@ -23,16 +29,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   bool _obscurePassword = true;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
     _provider = RegisterProvider();
     _provider.addListener(_onProviderUpdate);
+    _addressController.addListener(_onAddressChanged);
+  }
+
+  void _onAddressChanged() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(seconds: 2), () async {
+      final text = _addressController.text.trim();
+      if (text.isNotEmpty && mounted) {
+        try {
+          List<Location> locations = await locationFromAddress(text);
+          if (locations.isNotEmpty) {
+            final loc = locations.first;
+            _provider.setLocation(LatLng(loc.latitude, loc.longitude));
+          }
+        } catch (e) {
+          // Silent catch for geocoding failures
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _provider.removeListener(_onProviderUpdate);
     _provider.dispose();
     _nameController.dispose();
@@ -64,6 +91,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
       phone: _phoneController.text,
       address: _addressController.text,
     );
+  }
+
+  Future<void> _pickProfilePhoto() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt_rounded),
+              title: const Text('Ambil dari Kamera'),
+              onTap: () async {
+                Navigator.pop(context);
+                final file = await ImagePickerHelper.pickImage(
+                  source: ImageSource.camera,
+                );
+                if (file != null) _provider.setProfilePhoto(file);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: const Text('Pilih dari Galeri'),
+              onTap: () async {
+                Navigator.pop(context);
+                final file = await ImagePickerHelper.pickImage(
+                  source: ImageSource.gallery,
+                );
+                if (file != null) _provider.setProfilePhoto(file);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickLocation() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LocationPickerScreen(
+          initialLocation: _provider.selectedLocation ?? const LatLng(-6.200000, 106.816666),
+        ),
+      ),
+    );
+
+    if (result != null && result is Map<String, dynamic>) {
+      final loc = result['location'] as LatLng?;
+      final address = result['address'] as String?;
+      
+      if (loc != null) {
+        _provider.setLocation(loc);
+      }
+      if (address != null && address.isNotEmpty) {
+        _addressController.text = address;
+      }
+    }
   }
 
   @override
@@ -108,6 +195,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         passwordController: _passwordController,
                         phoneController: _phoneController,
                         addressController: _addressController,
+                        profilePhoto: _provider.profilePhoto,
+                        onPickPhoto: _pickProfilePhoto,
                         obscurePassword: _obscurePassword,
                         onTogglePassword: () {
                           setState(
@@ -118,6 +207,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onNavigateToLogin: () => context.pop(),
                         isLoading: _provider.isLoading,
                         errorMessage: _provider.errorMessage,
+                        selectedLocation: _provider.selectedLocation,
+                        onPickLocation: _pickLocation,
                       ),
               ),
             ),
