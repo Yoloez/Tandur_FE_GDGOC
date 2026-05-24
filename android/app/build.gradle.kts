@@ -1,3 +1,18 @@
+// Taruh ini di baris paling atas file android/app/build.gradle.kts
+val dotenv = mutableMapOf<String, String>()
+val envFile = rootProject.file("../.env")
+if (envFile.exists()) {
+    envFile.forEachLine { line ->
+        if (line.trim().isNotEmpty() && !line.startsWith("#")) {
+            val parts = line.split("=", limit = 2)
+            if (parts.size == 2) {
+                dotenv[parts[0].trim()] = parts[1].trim()
+            }
+        }
+    }
+}
+
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -28,6 +43,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        manifestPlaceholders["mapsApiKey"] = dotenv["GOOGLE_MAP_API_KEY"] ?: ""
     }
 
     buildTypes {
