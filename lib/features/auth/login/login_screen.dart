@@ -73,14 +73,19 @@ class _LoginSheetState extends State<LoginSheet> {
     );
   }
 
-  void _onGoogleLogin() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Login Google belum tersedia.'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+  Future<void> _onGoogleLogin() async {
+    final success = await AuthProvider.instance.loginWithGoogle();
+
+    if (success && mounted) {
+      Navigator.of(context).pop(); // Dismiss modal
+
+      final role = AuthProvider.instance.userRole;
+      if (role == 'petani') {
+        context.goNamed(AppRoutes.farmerHome);
+      } else {
+        context.goNamed(AppRoutes.buyerHome);
+      }
+    }
   }
 
   void _onNavigateToRegister() {
@@ -88,6 +93,18 @@ class _LoginSheetState extends State<LoginSheet> {
     Navigator.of(context).pop(); // dismiss modal
     context.pushNamed(AppRoutes.register);
   }
+
+  // Future<void> _onDebugLogin(String role) async {
+  //   final success = await AuthProvider.instance.debugLogin(role);
+  //   if (success && mounted) {
+  //     Navigator.of(context).pop();
+  //     if (role == 'petani') {
+  //       context.goNamed(AppRoutes.farmerHome);
+  //     } else {
+  //       context.goNamed(AppRoutes.buyerHome);
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -439,9 +456,9 @@ void showLoginModal(BuildContext context) {
     useSafeArea: true,
     backgroundColor: Colors.transparent,
     builder: (context) => DraggableScrollableSheet(
-      initialChildSize: 0.85,
+      initialChildSize: 0.80,
       minChildSize: 0.5,
-      maxChildSize: 0.85,
+      maxChildSize: 0.80,
       builder: (context, scrollController) => const LoginSheet(),
     ),
   );
