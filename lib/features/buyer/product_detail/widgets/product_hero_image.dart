@@ -14,16 +14,8 @@ class ProductHeroImage extends StatelessWidget {
       width: double.infinity,
       child: Stack(
         children: [
-          // ── Image ──
           Positioned.fill(
-            child: Image.asset(
-              image,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: AppColors.surfaceContainerLow,
-                child: const Icon(Icons.eco_rounded, size: 64, color: AppColors.outline),
-              ),
-            ),
+            child: _buildImage(),
           ),
 
           // ── Gradient at top for icon readability ──
@@ -69,6 +61,55 @@ class ProductHeroImage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildImage() {
+    final isNetwork = image.startsWith('http');
+
+    if (isNetwork) {
+      return Image.network(
+        image,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            color: AppColors.surfaceContainerLow,
+            child: const Center(
+              child: SizedBox(
+                width: 32,
+                height: 32,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    if (image.isEmpty) {
+      return _buildPlaceholder();
+    }
+
+    return Image.asset(
+      image,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      color: AppColors.surfaceContainerLow,
+      child: const Icon(
+        Icons.eco_rounded,
+        size: 64,
+        color: AppColors.outline,
       ),
     );
   }

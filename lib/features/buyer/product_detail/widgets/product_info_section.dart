@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tandur/core/constants/color.dart';
 
-/// Product name, badge, and price + weight row.
+/// Product name, badge, price, stock and unit row.
 class ProductInfoSection extends StatelessWidget {
   final String name;
   final String priceFormatted;
-  final String weight;
+  final String tipeStok; // e.g. "kg", "ikat"
+  final int stok;
   final String? badge;
 
   const ProductInfoSection({
     super.key,
     required this.name,
     required this.priceFormatted,
-    required this.weight,
+    required this.tipeStok,
+    required this.stok,
     this.badge,
   });
 
@@ -42,11 +44,13 @@ class ProductInfoSection extends StatelessWidget {
               const SizedBox(width: 10),
               Container(
                 margin: const EdgeInsets.only(top: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: _badgeColor(badge!).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: _badgeColor(badge!).withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: _badgeColor(badge!).withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   badge!,
@@ -63,7 +67,7 @@ class ProductInfoSection extends StatelessWidget {
 
         const SizedBox(height: 8),
 
-        // ── Price ──
+        // ── Price + unit ──
         Row(
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
@@ -76,13 +80,42 @@ class ProductInfoSection extends StatelessWidget {
                 color: AppColors.primary,
               ),
             ),
-            const SizedBox(width: 4),
+            if (tipeStok.isNotEmpty) ...[
+              const SizedBox(width: 4),
+              Text(
+                '/ $tipeStok',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
+        ),
+
+        const SizedBox(height: 6),
+
+        // ── Stock indicator ──
+        Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: stok > 0 ? AppColors.primary : AppColors.error,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
             Text(
-              '/ $weight',
+              stok > 0 ? 'Stok: $stok $tipeStok' : 'Stok habis',
               style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: AppColors.onSurfaceVariant,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: stok > 0
+                    ? AppColors.onSurfaceVariant
+                    : AppColors.error,
               ),
             ),
           ],
@@ -99,6 +132,8 @@ class ProductInfoSection extends StatelessWidget {
         return const Color(0xFFE76F51);
       case 'hydroponic':
         return AppColors.info;
+      case 'tersedia':
+        return AppColors.primary;
       default:
         return AppColors.outline;
     }

@@ -5,6 +5,7 @@ import 'package:tandur/core/constants/color.dart';
 /// Sticky bottom bar with quantity selector and "Tambah Keranjang" button.
 class ProductBottomBar extends StatelessWidget {
   final int quantity;
+  final bool isLoading;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
   final VoidCallback onAddToCart;
@@ -12,6 +13,7 @@ class ProductBottomBar extends StatelessWidget {
   const ProductBottomBar({
     super.key,
     required this.quantity,
+    this.isLoading = false,
     required this.onIncrement,
     required this.onDecrement,
     required this.onAddToCart,
@@ -46,7 +48,7 @@ class ProductBottomBar extends StatelessWidget {
                   _QtyButton(
                     icon: Icons.remove_rounded,
                     onTap: onDecrement,
-                    enabled: quantity > 1,
+                    enabled: quantity > 1 && !isLoading,
                   ),
                   SizedBox(
                     width: 36,
@@ -63,7 +65,7 @@ class ProductBottomBar extends StatelessWidget {
                   _QtyButton(
                     icon: Icons.add_rounded,
                     onTap: onIncrement,
-                    enabled: true,
+                    enabled: !isLoading,
                   ),
                 ],
               ),
@@ -76,22 +78,41 @@ class ProductBottomBar extends StatelessWidget {
               child: SizedBox(
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: onAddToCart,
+                  onPressed: isLoading ? null : onAddToCart,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.onPrimary,
+                    disabledBackgroundColor:
+                        AppColors.primary.withValues(alpha: 0.6),
+                    disabledForegroundColor: Colors.white70,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: Text(
-                    'Tambah Keranjang',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.shopping_cart_outlined, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Tambah ke Keranjang',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ),
