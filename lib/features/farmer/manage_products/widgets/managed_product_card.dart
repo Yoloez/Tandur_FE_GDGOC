@@ -9,6 +9,7 @@ class ManagedProductCard extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onUpdateStock;
+  final ValueChanged<bool>? onToggleActive;
 
   const ManagedProductCard({
     super.key,
@@ -16,6 +17,7 @@ class ManagedProductCard extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.onUpdateStock,
+    this.onToggleActive,
   });
 
   @override
@@ -40,7 +42,7 @@ class ManagedProductCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Name + Price ──
+                // ── Name + Price + Toggle ──
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -69,27 +71,72 @@ class ManagedProductCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: product.priceFormatted,
-                            style: GoogleFonts.beVietnamPro(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primary,
-                            ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: product.priceFormatted,
+                                style: GoogleFonts.beVietnamPro(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              TextSpan(
+                                text: '/${product.unit}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
                           ),
-                          TextSpan(
-                            text: '/${product.unit}',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.onSurfaceVariant,
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              product.isOutOfStock
+                                  ? 'Habis'
+                                  : (product.status == ProductStatus.active
+                                      ? 'Aktif'
+                                      : 'Pending'),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.onSurfaceVariant,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 16),
+                            SizedBox(
+                              height: 24,
+                              width: 40,
+                              child: Switch(
+                                value: product.status == ProductStatus.active,
+                                onChanged: product.isOutOfStock 
+                                    ? null 
+                                    : (val) {
+                                        if (onToggleActive != null) {
+                                          onToggleActive!(val);
+                                        }
+                                      },
+                                activeThumbColor: Colors.white,
+                                activeTrackColor: AppColors.primary,
+                                inactiveThumbColor: AppColors.onSurfaceVariant,
+                                inactiveTrackColor:
+                                    AppColors.surfaceContainerHigh,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -184,18 +231,7 @@ class _ImageSection extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(
-              product.image,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: AppColors.surfaceContainerLow,
-                child: const Icon(
-                  Icons.eco_rounded,
-                  size: 48,
-                  color: AppColors.outline,
-                ),
-              ),
-            ),
+            _buildProductImage(),
 
             // ── Out-of-stock overlay ──
             if (product.isOutOfStock)
@@ -229,17 +265,15 @@ class _ImageSection extends StatelessWidget {
               right: 10,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
+                  horizontal: 12,
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: product.isOutOfStock
-                      ? AppColors.onSurfaceVariant
-                      : AppColors.primary,
+                  color: _getBadgeColor(product.status),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  product.isOutOfStock ? 'Habis' : 'Aktif',
+                  _getBadgeText(product.status),
                   style: GoogleFonts.inter(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -249,6 +283,61 @@ class _ImageSection extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Color _getBadgeColor(ProductStatus status) {
+    switch (status) {
+      case ProductStatus.outOfStock:
+        return AppColors.onSurfaceVariant;
+      case ProductStatus.pending:
+        return const Color(0xFFF4A261); // Orange/warning color
+      case ProductStatus.active:
+        return AppColors.primary;
+    }
+  }
+
+  String _getBadgeText(ProductStatus status) {
+    switch (status) {
+      case ProductStatus.outOfStock:
+        return 'Habis';
+      case ProductStatus.pending:
+        return 'Pending';
+      case ProductStatus.active:
+        return 'Aktif';
+    }
+  }
+
+  Widget _buildProductImage() {
+    final image = product.image;
+    final isNetwork = image.startsWith('http');
+
+    if (isNetwork) {
+      return Image.network(
+        image,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: AppColors.surfaceContainerLow,
+          child: const Icon(
+            Icons.eco_rounded,
+            size: 48,
+            color: AppColors.outline,
+          ),
+        ),
+      );
+    }
+
+    return Image.asset(
+      image,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => Container(
+        color: AppColors.surfaceContainerLow,
+        child: const Icon(
+          Icons.eco_rounded,
+          size: 48,
+          color: AppColors.outline,
         ),
       ),
     );

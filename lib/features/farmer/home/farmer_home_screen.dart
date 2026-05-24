@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
+import 'package:tandur/features/auth/providers/auth_provider.dart';
 import 'providers/farmer_home_provider.dart';
 import 'models/farmer_home_data.dart';
 import 'widgets/farmer_app_bar.dart';
@@ -32,17 +33,24 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── App bar ──
-              FarmerAppBar(
-                greeting: _provider.greeting,
-                name: _provider.farmerName,
-                avatarUrl: _provider.avatarUrl,
-              ),
+        child: ListenableBuilder(
+          listenable: Listenable.merge([_provider, AuthProvider.instance]),
+          builder: (context, _) {
+            final currentUser = AuthProvider.instance.currentUser;
+            final name = currentUser?.namaLengkap.isNotEmpty == true ? currentUser!.namaLengkap : 'Petani';
+            final avatarUrl = AuthProvider.instance.avatarUrl;
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── App bar ──
+                  FarmerAppBar(
+                    greeting: _provider.greeting,
+                    name: name,
+                    avatarUrl: avatarUrl,
+                  ),
 
               const SizedBox(height: 16),
 
@@ -102,7 +110,9 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
                 child: InsightCard(data: _provider.insight),
               ),
             ],
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

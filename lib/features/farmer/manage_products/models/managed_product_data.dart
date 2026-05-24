@@ -56,21 +56,35 @@ class ManagedProduct {
 
   bool get isOutOfStock => status == ProductStatus.outOfStock;
 
-  /// TODO: Replace with API parsing
-  // factory ManagedProduct.fromJson(Map<String, dynamic> json) {
-  //   return ManagedProduct(
-  //     id: json['id'],
-  //     name: json['name'],
-  //     origin: json['origin'],
-  //     priceFormatted: 'Rp ${json['price']}',
-  //     unit: json['unit'],
-  //     stock: json['stock'],
-  //     stockUnit: json['stock_unit'],
-  //     image: json['image_url'],
-  //     status: ProductStatus.values.byName(json['status']),
-  //     category: json['category'],
-  //   );
-  // }
+  factory ManagedProduct.fromJson(Map<String, dynamic> json) {
+    final stockValue = int.tryParse(json['stok']?.toString() ?? '') ?? 0;
+    final categoryValue = (json['kategori'] ?? '').toString().toLowerCase();
+    
+    // Parse status from JSON
+    final statusString = json['status']?.toString().toLowerCase() ?? 'active';
+    ProductStatus status;
+    if (statusString == 'pending') {
+      status = ProductStatus.pending;
+    } else if (stockValue <= 0) {
+      status = ProductStatus.outOfStock;
+    } else {
+      status = ProductStatus.active;
+    }
+
+    return ManagedProduct(
+      id: json['id']?.toString() ?? '',
+      name: json['namaProduk']?.toString() ?? '-',
+      origin: 'Produk Anda',
+      // TODO: backend belum siap, aktifkan saat field harga tersedia
+      priceFormatted: 'Rp -',
+      unit: 'unit',
+      stock: stockValue,
+      stockUnit: 'unit',
+      image: json['fotoUrl']?.toString() ?? '',
+      status: status,
+      category: categoryValue.isEmpty ? 'lainnya' : categoryValue,
+    );
+  }
 }
 
-enum ProductStatus { active, outOfStock }
+enum ProductStatus { active, pending, outOfStock }

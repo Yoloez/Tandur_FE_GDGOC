@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/managed_product_data.dart';
+import '../services/manage_products_service.dart';
 
 /// Provides managed product data for the farmer.
 ///
@@ -41,35 +42,48 @@ class ManageProductsProvider extends ChangeNotifier {
   );
   bool _isLoading = false;
   String _activeCategory = 'sayur';
+  String? _errorMessage;
 
-  List<ManagedProduct> get products =>
-      _products.where((p) => p.category == _activeCategory).toList();
+  List<ManagedProduct> get products => _products;
   ProductStats get stats => _stats;
   bool get isLoading => _isLoading;
   String get activeCategory => _activeCategory;
+  String? get errorMessage => _errorMessage;
 
-  List<String> get categories => const ['Sayur', 'Benih'];
+  List<String> get categories => const ['Sayur', 'Benih', 'Buah', 'Lainnya'];
 
   void setCategory(String category) {
-    _activeCategory = category.toLowerCase();
+    final next = category.toLowerCase();
+    if (next == _activeCategory) return;
+    _activeCategory = next;
     notifyListeners();
+    loadProducts();
   }
 
   /// Load products — replace with API call.
   Future<void> loadProducts() async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 300));
+    try {
+      final products = await ManageProductsService.fetchProducts(
+        kategori: _activeCategory,
+      );
 
-    _products = _mockProducts;
-    _stats = const ProductStats(
-      totalProducts: 24,
-      lowStock: 3,
-      active: 21,
-      outOfStock: 3,
-    );
+      _products = products;
+      _stats = _calculateStats(products);
+    } catch (e) {
+      _products = [];
+      _stats = const ProductStats(
+        totalProducts: 0,
+        lowStock: 0,
+        active: 0,
+        outOfStock: 0,
+      );
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      debugPrint('Failed to load products: $_errorMessage');
+    }
 
     _isLoading = false;
     notifyListeners();
@@ -95,64 +109,60 @@ class ManageProductsProvider extends ChangeNotifier {
         stock: newStock,
         stockUnit: old.stockUnit,
         image: old.image,
-        status: newStock > 0 ? ProductStatus.active : ProductStatus.outOfStock,
+        status: newStock <= 0 
+            ? ProductStatus.outOfStock 
+            : (old.status == ProductStatus.outOfStock ? ProductStatus.active : old.status),
         category: old.category,
       );
       notifyListeners();
     }
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // Mock data — remove when API is ready
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  static final List<ManagedProduct> _mockProducts = [
-    const ManagedProduct(
-      id: 'wortel-organik',
-      name: 'Wortel Organik',
-      origin: 'Highland Farm',
-      priceFormatted: 'Rp 12.500',
-      unit: 'kg',
-      stock: 45,
-      stockUnit: 'kg',
-      image: 'assets/images/onboarding_farm.jpg',
-      status: ProductStatus.active,
-      category: 'sayur',
-    ),
-    const ManagedProduct(
-      id: 'bayam-hijau',
-      name: 'Bayam Hijau',
-      origin: 'Highland Farm',
-      priceFormatted: 'Rp 8.000',
-      unit: 'ikat',
-      stock: 112,
-      stockUnit: 'ikat',
-      image: 'assets/images/onboarding_market.jpg',
-      status: ProductStatus.active,
-      category: 'sayur',
-    ),
-    const ManagedProduct(
-      id: 'kentang-dieng',
-      name: 'Kentang Dieng',
-      origin: 'Highland Farm',
-      priceFormatted: 'Rp 15.000',
-      unit: 'kg',
-      stock: 0,
-      stockUnit: 'kg',
-      image: 'assets/images/onboarding_tech.jpg',
-      status: ProductStatus.outOfStock,
-      category: 'sayur',
-    ),
-    const ManagedProduct(
-      id: 'benih-tomat',
-      name: 'Benih Tomat',
-      origin: 'Highland Farm',
-      priceFormatted: 'Rp 25.000',
-      unit: 'pack',
-      stock: 30,
-      stockUnit: 'pack',
-      image: 'assets/images/onboarding_farm.jpg',
-      status: ProductStatus.active,
-      category: 'benih',
-    ),
-  ];
+  /// Toggle active status via API call
+  Future<void> toggleActive(String id, bool makeActive) async {
+    final statusString = makeActive ? 'active' : 'pending';
+    
+    // Optimistic update
+    final index = _products.indexWhere((p) => p.id == id);
+    if (index != -1) {
+      final old = _products[index];
+      _products[index] = ManagedProduct(
+        id: old.id,
+        name: old.name,
+        origin: old.origin,
+        priceFormatted: old.priceFormatted,
+        unit: old.unit,
+        stock: old.stock,
+        stockUnit: old.stockUnit,
+        image: old.image,
+        status: old.stock <= 0 
+            ? ProductStatus.outOfStock 
+            : (makeActive ? ProductStatus.active : ProductStatus.pending),
+        category: old.category,
+      );
+      _stats = _calculateStats(_products);
+      notifyListeners();
+    }
+
+    try {
+      await ManageProductsService.updateProductStatus(id, statusString);
+    } catch (e) {
+      // Revert on failure
+      loadProducts();
+    }
+  }
+
+  ProductStats _calculateStats(List<ManagedProduct> products) {
+    final total = products.length;
+    final outOfStock = products.where((p) => p.status == ProductStatus.outOfStock).length;
+    final active = products.where((p) => p.status == ProductStatus.active).length;
+    final lowStock = products.where((p) => p.stock > 0 && p.stock <= 5).length;
+
+    return ProductStats(
+      totalProducts: total,
+      lowStock: lowStock,
+      active: active,
+      outOfStock: outOfStock,
+    );
+  }
 }

@@ -15,9 +15,6 @@ class FarmerHomeProvider extends ChangeNotifier {
     return 'Selamat Malam';
   }
 
-  String get farmerName => 'Pak Budi';
-  String? get avatarUrl => null; // placeholder for profile image
-
   // ── Sales summary ──
   SalesSummary get sales => const SalesSummary(
         totalFormatted: 'Rp 12.450.000',

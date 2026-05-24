@@ -25,7 +25,6 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
     _provider = ManageProductsProvider();
     _provider.addListener(_onProviderUpdate);
     _provider.loadProducts();
-
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
   }
@@ -190,6 +189,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
                         onEdit: () => _onEditProduct(product.id),
                         onDelete: () => _onDeleteProduct(product.id),
                         onUpdateStock: () => _onUpdateStock(product.id),
+                        onToggleActive: (val) => _provider.toggleActive(product.id, val),
                       ),
                     ),
                   ),
