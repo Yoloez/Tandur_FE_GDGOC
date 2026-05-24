@@ -23,6 +23,7 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
   void initState() {
     super.initState();
     _provider = BuyerHomeProvider();
+    _provider.loadProducts();
   }
 
   @override
@@ -30,72 +31,89 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // ── App bar (fixed/pinned) ──
-            SliverAppBar(
-              pinned: true,
-              floating: false,
-              automaticallyImplyLeading: false,
-              backgroundColor: AppColors.surface,
-              surfaceTintColor: Colors.transparent,
-              elevation: 0,
-              scrolledUnderElevation: 0,
-              toolbarHeight: 60,
-              flexibleSpace: FlexibleSpaceBar(
-                collapseMode: CollapseMode.none,
-                background: BuyerAppBar(location: _provider.location),
-              ),
-            ),
-
-            // ── Content ──
-            SliverPadding(
-              padding: const EdgeInsets.only(bottom: 24),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  const SizedBox(height: 10),
-
-                  // ── Hero banner ──
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: HeroBanner(),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // ── Categories ──
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20),
-                    child: CategorySection(categories: _provider.categories),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // ── Verified farmers ──
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: VerifiedFarmersSection(farmers: _provider.farmers),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // ── Fresh products ──
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: FreshProductsSection(
-                      products: _provider.products,
-                      onProductTap: (productId) {
-                        context.pushNamed(
-                          AppRoutes.productDetail,
-                          pathParameters: {'id': productId},
-                        );
-                      },
+        child: ListenableBuilder(
+          listenable: _provider,
+          builder: (context, _) {
+            return RefreshIndicator(
+              onRefresh: _provider.loadProducts,
+              color: AppColors.primary,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  // ── App bar (fixed/pinned) ──
+                  SliverAppBar(
+                    pinned: true,
+                    floating: false,
+                    automaticallyImplyLeading: false,
+                    backgroundColor: AppColors.surface,
+                    surfaceTintColor: Colors.transparent,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    toolbarHeight: 60,
+                    flexibleSpace: FlexibleSpaceBar(
+                      collapseMode: CollapseMode.none,
+                      background: BuyerAppBar(location: _provider.location),
                     ),
                   ),
-                ]),
+
+                  // ── Content ──
+                  SliverPadding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        const SizedBox(height: 10),
+
+                        // ── Hero banner ──
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          child: HeroBanner(),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // ── Categories ──
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20),
+                          child:
+                              CategorySection(categories: _provider.categories),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // ── Verified farmers ──
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child:
+                              VerifiedFarmersSection(farmers: _provider.farmers),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // ── Fresh products (API) ──
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: FreshProductsSection(
+                            products: _provider.products,
+                            isLoading: _provider.isLoadingProducts,
+                            errorMessage: _provider.productsError,
+                            onRetry: _provider.loadProducts,
+                            onViewAll: () =>
+                                context.goNamed(AppRoutes.buyerMarket),
+                            onProductTap: (productId) {
+                              context.pushNamed(
+                                AppRoutes.productDetail,
+                                pathParameters: {'id': productId},
+                              );
+                            },
+                          ),
+                        ),
+                      ]),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );

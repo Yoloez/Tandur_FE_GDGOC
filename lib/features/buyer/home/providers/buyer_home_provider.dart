@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:tandur/features/buyer/market/services/buyer_market_service.dart';
 import '../models/buyer_home_data.dart';
 
-/// Provides mock data for the buyer home screen.
+/// Provides data for the buyer home screen.
 ///
-/// In production, replace with API calls.
+/// Static data (categories, farmers) is kept in-memory.
+/// Products are fetched from the backend via [BuyerMarketService].
 class BuyerHomeProvider extends ChangeNotifier {
   String get location => 'Jakarta Selatan';
 
@@ -22,39 +24,31 @@ class BuyerHomeProvider extends ChangeNotifier {
     FarmerItem(name: 'Mas Hendra', location: 'Karawang, Jabar', rating: 4.7),
   ];
 
-  // ── Fresh products ──
-  List<ProductItem> get products => const [
-    ProductItem(
-      id: 'bayam-hijau',
-      farmName: 'Highland Farm',
-      productName: 'Bayam Hijau Segar 250g',
-      priceFormatted: 'Rp8.500',
-      badge: 'Organic',
-      image: 'assets/images/onboarding_farm.jpg',
-    ),
-    ProductItem(
-      id: 'apel-fuji',
-      farmName: 'Kebun Apel Batu',
-      productName: 'Apel Fuji Manis 1kg',
-      priceFormatted: 'Rp32.000',
-      badge: 'Premium',
-      image: 'assets/images/onboarding_market.jpg',
-    ),
-    ProductItem(
-      id: 'ubi-cilembu',
-      farmName: 'Tani Maju',
-      productName: 'Ubi Cilembu Madu 500g',
-      priceFormatted: 'Rp12.000',
-      badge: null,
-      image: 'assets/images/onboarding_tech.jpg',
-    ),
-    ProductItem(
-      id: 'wortel-organik',
-      farmName: 'Green Leaf Farm',
-      productName: 'Wortel Organik 500g',
-      priceFormatted: 'Rp15.000',
-      badge: 'Hydroponic',
-      image: 'assets/images/onboarding_farm.jpg',
-    ),
-  ];
+  // ── Fresh products (from API) ──
+  List<ProductItem> _products = [];
+  bool _isLoadingProducts = false;
+  String? _productsError;
+
+  List<ProductItem> get products => _products;
+  bool get isLoadingProducts => _isLoadingProducts;
+  String? get productsError => _productsError;
+
+  /// Fetch the latest products from the backend.
+  /// Fetches without category filter to get all latest products.
+  Future<void> loadProducts() async {
+    _isLoadingProducts = true;
+    _productsError = null;
+    notifyListeners();
+
+    try {
+      final result = await BuyerMarketService.fetchProducts();
+      _products = result.products;
+    } catch (e) {
+      _productsError = e.toString().replaceAll('Exception: ', '');
+      _products = [];
+    } finally {
+      _isLoadingProducts = false;
+      notifyListeners();
+    }
+  }
 }

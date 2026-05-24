@@ -31,6 +31,7 @@ class ProductItem {
   final String priceFormatted;
   final String? badge; // "Organic", "Premium", "Hydroponic", etc.
   final String image;
+  final String? tipeStok; // e.g. "kg", "ikat"
 
   const ProductItem({
     required this.id,
@@ -39,5 +40,6 @@ class ProductItem {
     required this.priceFormatted,
     this.badge,
     required this.image,
+    this.tipeStok,
   });
 }
