@@ -11,6 +11,9 @@ class AppShell extends StatelessWidget {
     if (location.startsWith('/buyer/profile')) {
       return 3;
     }
+    if (location.startsWith('/buyer/market')) {
+      return 1;
+    }
     if (location.startsWith('/buyer/home')) {
       return 0;
     }

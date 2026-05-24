@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -16,6 +17,9 @@ class AppBottomNav extends StatelessWidget {
     switch (index) {
       case 0:
         context.goNamed(AppRoutes.buyerHome);
+        return;
+      case 1:
+        context.goNamed(AppRoutes.buyerMarket);
         return;
       case 3:
         context.goNamed(AppRoutes.buyerProfile);
@@ -34,7 +38,7 @@ class AppBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       {'icon': Icons.home_rounded, 'label': 'Beranda'},
-      {'icon': Icons.grass_rounded, 'label': 'Kebun'},
+      {'icon': Icons.grass_rounded, 'label': 'Pasar'},
       {'icon': Icons.bar_chart_rounded, 'label': 'Pantau'},
       {'icon': Icons.person_outline_rounded, 'label': 'Profil'},
     ];
@@ -44,7 +48,7 @@ class AppBottomNav extends StatelessWidget {
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryDark.withOpacity(0.08),
+            color: AppColors.primaryDark.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -69,7 +73,7 @@ class AppBottomNav extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? AppColors.primary.withOpacity(0.12)
+                        ? AppColors.primary.withValues(alpha: 0.12)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -86,7 +90,7 @@ class AppBottomNav extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           items[index]['label'] as String,
-                          style: const TextStyle(
+                          style: GoogleFonts.beVietnamPro(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: AppColors.primary,
