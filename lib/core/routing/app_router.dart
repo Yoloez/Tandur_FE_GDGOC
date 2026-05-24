@@ -215,6 +215,10 @@ class AppRouter {
           );
         },
       ),
+      GoRoute(
+        path: '/products/:id',
+        redirect: (context, state) => '/product/${state.pathParameters['id']}',
+      ),
 
       // ── Buyer Cart (no bottom nav) ──
       GoRoute(
