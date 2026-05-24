@@ -1,12 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tandur/core/constants/color.dart';
+import 'package:tandur/features/buyer/checkout/models/transaction_model.dart';
 
 class CheckoutSummarySection extends StatelessWidget {
-  const CheckoutSummarySection({super.key});
+  final TransactionModel transaction;
+  
+  const CheckoutSummarySection({super.key, required this.transaction});
 
   @override
   Widget build(BuildContext context) {
+    // Determine total formatting
+    final totalPembayaran = double.tryParse(transaction.totalPembayaran)?.toInt() ?? 0;
+    
+    // In a real app, subtotal would be computed from items.
+    int subtotal = 0;
+    for (var item in transaction.items) {
+      if (item.product.harga != null) {
+        subtotal += item.product.harga! * item.jumlah;
+      }
+    }
+    
+    // Fallback if totalPembayaran isn't just the sum (e.g. shipping, service fees)
+    // Here we just display the given totalPembayaran.
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -29,11 +46,11 @@ class CheckoutSummarySection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _buildSummaryRow('Subtotal Produk', 'Rp 28.500'),
+          _buildSummaryRow('Subtotal Produk', _formatCurrency(subtotal)),
           const SizedBox(height: 12),
-          _buildSummaryRow('Total Ongkos Kirim', 'Rp 30.000'),
+          _buildSummaryRow('Total Ongkos Kirim', 'Rp -'), // Placeholder since it's not in the response yet
           const SizedBox(height: 12),
-          _buildSummaryRow('Biaya Layanan', 'Rp 2.000'),
+          _buildSummaryRow('Biaya Layanan', 'Rp -'), // Placeholder
           const SizedBox(height: 16),
           Divider(
             color: AppColors.outlineVariant.withValues(alpha: 0.5),
@@ -51,7 +68,7 @@ class CheckoutSummarySection extends StatelessWidget {
                 ),
               ),
               Text(
-                'Rp 60.500',
+                _formatCurrency(totalPembayaran),
                 style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -87,5 +104,12 @@ class CheckoutSummarySection extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _formatCurrency(int value) {
+    return 'Rp ${value.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]}.',
+        )}';
   }
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tandur/core/constants/color.dart';
+import 'package:tandur/features/buyer/checkout/models/transaction_model.dart';
 
 class CheckoutOrderSection extends StatelessWidget {
-  const CheckoutOrderSection({super.key});
+  final TransactionModel transaction;
+  
+  const CheckoutOrderSection({super.key, required this.transaction});
 
   @override
   Widget build(BuildContext context) {
@@ -29,31 +32,25 @@ class CheckoutOrderSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        // Item 1
-        _buildFarmCard(
-          farmName: 'Green Leaf Farm',
-          productName: 'Wortel Organik 500g',
-          price: 'Rp 12.500',
-          quantity: 1,
-          shippingMethod: 'Reguler',
-          shippingEstimation: 'Estimasi tiba 12-14 Okt',
-          shippingCost: 'Rp 10.000',
-          imagePath: 'assets/images/wortel.png',
-          avatarPath: 'assets/images/farmer1.png',
-        ),
-        const SizedBox(height: 16),
-        // Item 2
-        _buildFarmCard(
-          farmName: 'Highland Farm',
-          productName: 'Bayam Hijau Segar 250g',
-          price: 'Rp 8.000',
-          quantity: 2,
-          shippingMethod: 'Sameday',
-          shippingEstimation: 'Estimasi tiba hari ini',
-          shippingCost: 'Rp 20.000',
-          imagePath: 'assets/images/bayam.png',
-          avatarPath: 'assets/images/farmer2.png',
-        ),
+        ...transaction.items.map((item) {
+          final imageUrl = item.product.fotoUrl.isNotEmpty 
+              ? item.product.fotoUrl.first 
+              : '';
+              
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _buildFarmCard(
+              farmName: 'Mitra Tani', // Replace with actual farmer name if available
+              productName: item.product.namaProduk,
+              price: item.product.priceFormatted,
+              quantity: item.jumlah,
+              shippingMethod: 'Reguler', // Placeholder
+              shippingEstimation: 'Estimasi tiba 12-14 Okt', // Placeholder
+              shippingCost: 'Rp 10.000', // Placeholder
+              imagePath: imageUrl,
+            ),
+          );
+        }),
       ],
     );
   }
@@ -67,7 +64,6 @@ class CheckoutOrderSection extends StatelessWidget {
     required String shippingEstimation,
     required String shippingCost,
     required String imagePath,
-    required String avatarPath,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -88,10 +84,10 @@ class CheckoutOrderSection extends StatelessWidget {
             ),
             child: Row(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 12,
-                  backgroundImage: AssetImage(avatarPath),
-                  onBackgroundImageError: (exception, stackTrace) => const Icon(Icons.person, size: 12),
+                  backgroundColor: AppColors.primary,
+                  child: Icon(Icons.person, size: 12, color: Colors.white),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -120,10 +116,11 @@ class CheckoutOrderSection extends StatelessWidget {
                     border: Border.all(
                       color: AppColors.outlineVariant.withValues(alpha: 0.5),
                     ),
-                    image: DecorationImage(
-                      image: AssetImage(imagePath),
-                      fit: BoxFit.cover,
-                    ),
+                    color: AppColors.surfaceContainerHighest,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _buildImage(imagePath),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -240,5 +237,29 @@ class CheckoutOrderSection extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildImage(String url) {
+    if (url.startsWith('http')) {
+      return Image.network(
+        url,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Icon(
+          Icons.eco_rounded,
+          color: AppColors.outline,
+        ),
+      );
+    }
+    if (url.isNotEmpty) {
+      return Image.asset(
+        url,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Icon(
+          Icons.eco_rounded,
+          color: AppColors.outline,
+        ),
+      );
+    }
+    return const Icon(Icons.eco_rounded, color: AppColors.outline);
   }
 }
