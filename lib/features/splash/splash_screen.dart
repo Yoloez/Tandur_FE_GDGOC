@@ -5,6 +5,8 @@ import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
 import 'package:tandur/core/services/onboarding_prefs.dart';
 
+import 'package:tandur/features/auth/providers/auth_provider.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -32,6 +34,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _startSequence() async {
     final isFirstLaunch = OnboardingPrefs.isFirstLaunch();
+    final auth = AuthProvider.instance;
 
     // Brief pause then fade in
     await Future.delayed(const Duration(milliseconds: 200));
@@ -40,9 +43,20 @@ class _SplashScreenState extends State<SplashScreen>
     // Hold splash for a natural beat
     await Future.delayed(const Duration(milliseconds: 2200));
 
+    // Wait until auth finishes its initial token check
+    while (auth.isInitializing) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
     final firstLaunch = await isFirstLaunch;
     if (mounted) {
-      if (firstLaunch) {
+      if (auth.isAuthenticated) {
+        if (auth.userRole == 'petani') {
+          context.goNamed(AppRoutes.farmerHome);
+        } else {
+          context.goNamed(AppRoutes.buyerHome);
+        }
+      } else if (firstLaunch) {
         context.goNamed(AppRoutes.onboarding);
       } else {
         context.goNamed(AppRoutes.welcome);
