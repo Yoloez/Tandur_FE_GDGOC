@@ -32,7 +32,7 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
   @override
   void didUpdateWidget(covariant BuyerMarketScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.initialSearchQuery != oldWidget.initialSearchQuery && 
+    if (widget.initialSearchQuery != oldWidget.initialSearchQuery &&
         widget.initialSearchQuery != null) {
       _searchController.text = widget.initialSearchQuery!;
       _provider.setSearchQuery(widget.initialSearchQuery!);
@@ -63,6 +63,8 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
 
                 // ── Category Chips ──
                 _buildCategoryRow(),
+
+                const SizedBox(height: 10),
 
                 // ── Products + Pagination ──
                 Expanded(child: _buildBody()),
@@ -511,7 +513,7 @@ class _CategoryChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : AppColors.surfaceContainerLow,
           borderRadius: BorderRadius.circular(24),
