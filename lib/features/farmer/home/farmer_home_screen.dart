@@ -37,7 +37,9 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
           listenable: Listenable.merge([_provider, AuthProvider.instance]),
           builder: (context, _) {
             final currentUser = AuthProvider.instance.currentUser;
-            final name = currentUser?.namaLengkap.isNotEmpty == true ? currentUser!.namaLengkap : 'Petani';
+            final name = currentUser?.namaLengkap.isNotEmpty == true
+                ? currentUser!.namaLengkap
+                : 'Petani';
             final avatarUrl = AuthProvider.instance.avatarUrl;
 
             return SingleChildScrollView(
@@ -52,64 +54,68 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
                     avatarUrl: avatarUrl,
                   ),
 
-              const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-              // ── Sales card ──
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: SalesSummaryCard(data: _provider.sales),
-              ),
+                  // ── Sales card ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: SalesSummaryCard(data: _provider.sales),
+                  ),
 
-              const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-              // ── Order stats ──
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: OrderStatsRow(stats: _provider.orderStats),
-              ),
+                  // ── Order stats ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: OrderStatsRow(stats: _provider.orderStats),
+                  ),
 
-              const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-              // ── Product chart ──
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ProductStatsCard(bars: _provider.chartBars),
-              ),
+                  // ── Product chart ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: ProductStatsCard(bars: _provider.chartBars),
+                  ),
 
-              const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-              // ── Main menu ──
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: MainMenuSection(
-                  items: _provider.menuItems.map((item) {
-                    if (item.label == 'Kelola\nProduk') {
-                      return MenuItem(
-                        icon: item.icon,
-                        label: item.label,
-                        onTap: () => context.pushNamed(AppRoutes.farmerManageProducts),
-                      );
-                    }
-                    if (item.label == 'Upload\nProduk') {
-                      return MenuItem(
-                        icon: item.icon,
-                        label: item.label,
-                        onTap: () => context.pushNamed(AppRoutes.farmerUploadProduct),
-                      );
-                    }
-                    return item;
-                  }).toList(),
-                ),
-              ),
+                  // ── Main menu ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: MainMenuSection(
+                      items: _provider.menuItems.map((item) {
+                        if (item.label == 'Kelola\nProduk') {
+                          return MenuItem(
+                            icon: item.icon,
+                            label: item.label,
+                            onTap: () => context.pushNamed(
+                              AppRoutes.farmerManageProducts,
+                            ),
+                          );
+                        }
+                        if (item.label == 'Upload\nProduk') {
+                          return MenuItem(
+                            icon: item.icon,
+                            label: item.label,
+                            onTap: () => context.pushNamed(
+                              AppRoutes.farmerUploadProduct,
+                            ),
+                          );
+                        }
+                        return item;
+                      }).toList(),
+                    ),
+                  ),
 
-              const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-              // ── Insight card ──
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: InsightCard(data: _provider.insight),
-              ),
-            ],
+                  // ── Insight card ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: InsightCard(data: _provider.insight),
+                  ),
+                ],
               ),
             );
           },

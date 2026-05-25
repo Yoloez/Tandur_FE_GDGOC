@@ -28,7 +28,7 @@ class HeroBanner extends StatelessWidget {
           children: [
             // ── Background image ──
             Image.asset(
-              'assets/images/buyer_hero_banner.png',
+              'assets/images/jual-beli.webp',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => Container(
                 decoration: const BoxDecoration(
@@ -72,7 +72,7 @@ class HeroBanner extends StatelessWidget {
                       letterSpacing: -0.3,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   SizedBox(
                     width: 160,
                     child: Text(
@@ -86,24 +86,24 @@ class HeroBanner extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      'Belanja',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                  // Container(
+                  //   padding: const EdgeInsets.symmetric(
+                  //     horizontal: 16,
+                  //     vertical: 8,
+                  //   ),
+                  //   decoration: BoxDecoration(
+                  //     color: AppColors.primary,
+                  //     borderRadius: BorderRadius.circular(10),
+                  //   ),
+                  //   child: Text(
+                  //     'Belanja',
+                  //     style: GoogleFonts.inter(
+                  //       fontSize: 12,
+                  //       fontWeight: FontWeight.w600,
+                  //       color: Colors.white,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
