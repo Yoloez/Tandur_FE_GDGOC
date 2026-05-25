@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
 import 'package:tandur/features/auth/providers/auth_provider.dart';
+import 'package:tandur/core/widgets/edit_profile_screen.dart'
+    as tandur_edit_profile;
 
-/// A fully-featured, role-agnostic profile screen.
-/// Used by both [BuyerProfileScreen] and [FarmerProfileScreen].
 class SharedProfileScreen extends StatefulWidget {
   const SharedProfileScreen({super.key});
 
@@ -52,144 +52,123 @@ class _SharedProfileScreenState extends State<SharedProfileScreen> {
         final initials = _buildInitials(name, email);
         final role = user?.role ?? AuthProvider.instance.userRole ?? '';
         final roleLabel = role == 'petani' ? 'Petani' : 'Pembeli';
+        final isPetani = role == 'petani';
 
         return Scaffold(
-          backgroundColor: AppColors.surfaceContainerLowest,
-          body: CustomScrollView(
+          backgroundColor: AppColors.surface,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            title: Text(
+              isPetani ? 'Profil Petani' : 'Profil Pembeli',
+              style: GoogleFonts.beVietnamPro(
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                color: AppColors.primary,
+              ),
+            ),
+            centerTitle: false,
+            actions: [
+              IconButton(
+                icon: const Icon(
+                  Icons.refresh_rounded,
+                  color: AppColors.primary,
+                ),
+                tooltip: 'Perbarui',
+                onPressed: AuthProvider.instance.fetchCurrentUser,
+              ),
+            ],
+          ),
+          body: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            slivers: [
-              // ── Collapsible header ──
-              SliverAppBar(
-                expandedHeight: 230,
-                pinned: true,
-                stretch: true,
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                flexibleSpace: FlexibleSpaceBar(
-                  collapseMode: CollapseMode.parallax,
-                  stretchModes: const [StretchMode.zoomBackground],
-                  background: _ProfileHeader(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // ── Avatar + Name + Badge ──
+                  _AvatarSection(
                     name: name.isNotEmpty ? name : roleLabel,
-                    email: email,
                     initials: initials,
                     avatarUrl: avatarUrl,
-                    roleLabel: roleLabel,
+                    roleLabel: '$roleLabel Terverifikasi',
+                    isPetani: isPetani,
                   ),
-                ),
-                title: Text(
-                  'Profil Saya',
-                  style: GoogleFonts.beVietnamPro(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                    color: Colors.white,
-                  ),
-                ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                    tooltip: 'Perbarui',
-                    onPressed: AuthProvider.instance.fetchCurrentUser,
-                  ),
-                ],
-              ),
 
-              // ── Body content ──
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 48),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
+                  const SizedBox(height: 32),
 
-                    // Loading shimmer
-                    if (AuthProvider.instance.isLoading && user == null)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 60),
-                        child: Center(
-                          child: CircularProgressIndicator(color: AppColors.primary),
-                        ),
-                      ),
-
-                    // ── Informasi Akun ──
-                    if (user != null) ...[
-                      _SectionLabel(label: 'Informasi Akun'),
-                      const SizedBox(height: 10),
-                      _InfoCard(children: [
-                        _InfoRow(
-                          icon: Icons.person_outline_rounded,
-                          label: 'Nama Lengkap',
-                          value: name.isNotEmpty ? name : '-',
-                        ),
-                        _InfoRow(
-                          icon: Icons.alternate_email_rounded,
-                          label: 'Email',
-                          value: email.isNotEmpty ? email : '-',
-                        ),
-                        _InfoRow(
-                          icon: Icons.phone_outlined,
-                          label: 'No. Telepon',
-                          value: user.nomorTelepon?.isNotEmpty == true
-                              ? user.nomorTelepon!
-                              : 'Belum diisi',
-                          valueFaded: !(user.nomorTelepon?.isNotEmpty == true),
-                        ),
-                        _InfoRow(
-                          icon: Icons.location_on_outlined,
-                          label: 'Alamat',
-                          value: user.alamatLengkap?.isNotEmpty == true
-                              ? user.alamatLengkap!
-                              : 'Belum diisi',
-                          valueFaded: !(user.alamatLengkap?.isNotEmpty == true),
-                          isLast: true,
-                        ),
-                      ]),
-                      const SizedBox(height: 28),
-                    ],
-
-                    // ── Pengaturan ──
-                    _SectionLabel(label: 'Pengaturan'),
-                    const SizedBox(height: 10),
-                    _InfoCard(children: [
-                      _MenuTile(
-                        icon: Icons.notifications_none_rounded,
-                        label: 'Notifikasi',
-                        subtitle: 'Atur preferensi pengingat',
-                        onTap: () {},
-                      ),
-                      _MenuTile(
-                        icon: Icons.lock_outline_rounded,
-                        label: 'Privasi & Keamanan',
-                        subtitle: 'Kelola izin aplikasi',
-                        onTap: () {},
-                      ),
-                      _MenuTile(
-                        icon: Icons.help_outline_rounded,
-                        label: 'Bantuan',
-                        subtitle: 'Pusat bantuan & FAQ',
-                        onTap: () {},
-                        isLast: true,
-                      ),
-                    ]),
-
-                    const SizedBox(height: 28),
-
-                    // ── Versi aplikasi ──
-                    Center(
-                      child: Text(
-                        'Tandur · v1.0.0',
-                        style: GoogleFonts.beVietnamPro(
-                          fontSize: 12,
-                          color: AppColors.outline,
+                  // ── Loading ──
+                  if (AuthProvider.instance.isLoading && user == null)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
 
-                    // ── Logout button ──
-                    _LogoutButton(onTap: _showLogoutDialog),
-                  ]),
-                ),
+                  // ── Info Rows ──
+                  if (user != null) ...[
+                    _InfoCard(
+                      icon: Icons.person_outline_rounded,
+                      label: 'NAMA LENGKAP',
+                      value: name.isNotEmpty ? name : '-',
+                    ),
+                    const SizedBox(height: 12),
+                    _InfoCard(
+                      icon: Icons.mail_outline_rounded,
+                      label: 'EMAIL',
+                      value: email.isNotEmpty ? email : '-',
+                    ),
+                    const SizedBox(height: 12),
+                    _InfoCard(
+                      icon: Icons.phone_outlined,
+                      label: 'NOMOR TELEPON',
+                      value: user.nomorTelepon?.isNotEmpty == true
+                          ? user.nomorTelepon!
+                          : 'Belum diisi',
+                      isPlaceholder: !(user.nomorTelepon?.isNotEmpty == true),
+                    ),
+                    const SizedBox(height: 12),
+                    _InfoCard(
+                      icon: Icons.location_on_outlined,
+                      label: 'ALAMAT PENGIRIMAN',
+                      value: user.alamatLengkap?.isNotEmpty == true
+                          ? user.alamatLengkap!
+                          : 'Belum diisi',
+                      isPlaceholder: !(user.alamatLengkap?.isNotEmpty == true),
+                    ),
+
+                    // ── Stats khusus Petani ──
+                    if (isPetani) ...[
+                      const SizedBox(height: 12),
+                      _PetaniStatsCard(
+                        totalProduk: '12', // Placeholder
+                        rating: '4.8', // Placeholder
+                      ),
+                    ],
+
+                    const SizedBox(height: 32),
+                  ],
+
+                  // ── Action Buttons ──
+                  _EditProfileButton(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const tandur_edit_profile.EditProfileScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _LogoutButton(onTap: _showLogoutDialog),
+                  const SizedBox(height: 32),
+                ],
               ),
-            ],
+            ),
           ),
         );
       },
@@ -207,161 +186,187 @@ class _SharedProfileScreenState extends State<SharedProfileScreen> {
 }
 
 // ─────────────────────────────────────────────
-// Header
+// Avatar Section (tengah halaman)
 // ─────────────────────────────────────────────
-
-class _ProfileHeader extends StatelessWidget {
+class _AvatarSection extends StatelessWidget {
   final String name;
-  final String email;
   final String initials;
   final String? avatarUrl;
   final String roleLabel;
+  final bool isPetani;
 
-  const _ProfileHeader({
+  const _AvatarSection({
     required this.name,
-    required this.email,
     required this.initials,
     required this.avatarUrl,
     required this.roleLabel,
+    required this.isPetani,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Avatar dengan badge edit
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const tandur_edit_profile.EditProfileScreen(),
+              ),
+            );
+          },
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  radius: 52,
+                  backgroundColor: AppColors.primaryContainer,
+                  backgroundImage: avatarUrl != null
+                      ? NetworkImage(avatarUrl!)
+                      : null,
+                  child: avatarUrl == null
+                      ? Text(
+                          initials,
+                          style: GoogleFonts.beVietnamPro(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.onPrimaryContainer,
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+              Positioned(
+                bottom: 2,
+                right: 2,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        // Nama
+        Text(
+          name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF1A1A1A),
+          ),
+        ),
+        const SizedBox(height: 6),
+        // Badge role
+        Text(
+          roleLabel,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[500],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Info Card (masing-masing terpisah)
+// ─────────────────────────────────────────────
+class _InfoCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final bool isPlaceholder;
+
+  const _InfoCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.isPlaceholder = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF004F1A), Color(0xFF1C8634)],
-        ),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.outlineVariant),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Stack(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Subtle decorative circle
-          Positioned(
-            right: -40,
-            top: -40,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
-              ),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+              color: AppColors.bggreen,
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.all(Radius.circular(14)),
             ),
+            child: Icon(icon, size: 20, color: AppColors.primary),
           ),
-          Positioned(
-            left: -20,
-            bottom: -30,
-            child: Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.04),
-              ),
-            ),
-          ),
-
-          // Content
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
-              child: Row(
-                children: [
-                  // Avatar ring
-                  Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        width: 2,
-                      ),
-                    ),
-                    child: CircleAvatar(
-                      radius: 36,
-                      backgroundColor: AppColors.primaryContainer,
-                      backgroundImage:
-                          avatarUrl != null ? NetworkImage(avatarUrl!) : null,
-                      child: avatarUrl == null
-                          ? Text(
-                              initials,
-                              style: GoogleFonts.beVietnamPro(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.onPrimaryContainer,
-                              ),
-                            )
-                          : null,
-                    ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[400],
+                    letterSpacing: 0.5,
                   ),
-                  const SizedBox(width: 18),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.beVietnamPro(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          email,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.beVietnamPro(
-                            fontSize: 12,
-                            color: Colors.white.withValues(alpha: 0.75),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        // Role badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                roleLabel == 'Petani'
-                                    ? Icons.agriculture_rounded
-                                    : Icons.shopping_bag_outlined,
-                                color: Colors.white,
-                                size: 12,
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                roleLabel,
-                                style: GoogleFonts.beVietnamPro(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  value,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: isPlaceholder
+                        ? Colors.grey[400]
+                        : const Color(0xFF1A1A1A),
+                    fontStyle: isPlaceholder
+                        ? FontStyle.italic
+                        : FontStyle.normal,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
@@ -371,208 +376,108 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// Section label
+// Stats Card khusus Petani
 // ─────────────────────────────────────────────
+class _PetaniStatsCard extends StatelessWidget {
+  final String totalProduk;
+  final String rating;
 
-class _SectionLabel extends StatelessWidget {
-  final String label;
-  const _SectionLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4),
-      child: Text(
-        label.toUpperCase(),
-        style: GoogleFonts.beVietnamPro(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: AppColors.outline,
-          letterSpacing: 1.0,
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-// Info card container
-// ─────────────────────────────────────────────
-
-class _InfoCard extends StatelessWidget {
-  final List<Widget> children;
-  const _InfoCard({required this.children});
+  const _PetaniStatsCard({required this.totalProduk, required this.rating});
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.outlineVariant),
-      ),
-      clipBehavior: Clip.hardEdge,
-      child: Column(
-        children: children,
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-// Info row (read-only data)
-// ─────────────────────────────────────────────
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final bool valueFaded;
-  final bool isLast;
-
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.valueFaded = false,
-    this.isLast = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 18, color: AppColors.onSurfaceVariant),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: GoogleFonts.beVietnamPro(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.outline,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      value,
-                      style: GoogleFonts.beVietnamPro(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: valueFaded
-                            ? AppColors.outline
-                            : AppColors.onSurface,
-                        fontStyle: valueFaded ? FontStyle.italic : FontStyle.normal,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-        ),
-        if (!isLast)
-          const Divider(height: 1, thickness: 1, indent: 66, color: AppColors.outlineVariant),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────
-// Menu tile (tappable)
-// ─────────────────────────────────────────────
-
-class _MenuTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String subtitle;
-  final VoidCallback onTap;
-  final bool isLast;
-
-  const _MenuTile({
-    required this.icon,
-    required this.label,
-    required this.subtitle,
-    required this.onTap,
-    this.isLast = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, size: 18, color: AppColors.onSurfaceVariant),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: GoogleFonts.beVietnamPro(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: GoogleFonts.beVietnamPro(
-                          fontSize: 11,
-                          color: AppColors.outline,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right_rounded,
-                    color: AppColors.outline, size: 20),
-              ],
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _StatItem(
+              icon: Icons.inventory_2_outlined,
+              iconColor: Colors.grey[400]!,
+              value: totalProduk,
+              label: 'TOTAL PRODUK',
             ),
           ),
+          Container(width: 1, height: 40, color: Colors.grey[200]),
+          Expanded(
+            child: _StatItem(
+              icon: Icons.star_rounded,
+              iconColor: const Color(0xFFFBBC04),
+              value: rating,
+              label: 'RATING',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String value;
+  final String label;
+
+  const _StatItem({
+    required this.icon,
+    required this.iconColor,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: const BoxDecoration(
+            color: AppColors.bggreen,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 20, color: iconColor),
         ),
-        if (!isLast)
-          const Divider(height: 1, thickness: 1, indent: 66, color: AppColors.outlineVariant),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xFF1A1A1A),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[400],
+            letterSpacing: 0.5,
+          ),
+        ),
       ],
     );
   }
 }
 
 // ─────────────────────────────────────────────
-// Logout button
+// Logout Button
 // ─────────────────────────────────────────────
-
 class _LogoutButton extends StatelessWidget {
   final VoidCallback onTap;
   const _LogoutButton({required this.onTap});
@@ -581,21 +486,28 @@ class _LogoutButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 52,
-      child: OutlinedButton.icon(
+      height: 56,
+      child: ElevatedButton.icon(
         onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.error,
-          side: const BorderSide(color: AppColors.error, width: 1.5),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          side: const BorderSide(color: AppColors.error, width: 1),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
-        icon: const Icon(Icons.logout_rounded, size: 20),
+        icon: const Icon(
+          Icons.logout_rounded,
+          size: 20,
+          color: AppColors.error,
+        ),
         label: Text(
-          'Keluar dari Akun',
+          'Keluar',
           style: GoogleFonts.beVietnamPro(
-            fontSize: 15,
+            color: AppColors.error,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -605,9 +517,43 @@ class _LogoutButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// Logout confirmation dialog
+// Edit Profile Button
 // ─────────────────────────────────────────────
+class _EditProfileButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _EditProfileButton({required this.onTap});
 
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        icon: const Icon(Icons.edit_rounded, size: 16),
+        label: Text(
+          'Edit Profil',
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Logout Dialog
+// ─────────────────────────────────────────────
 class _LogoutDialog extends StatefulWidget {
   final Future<void> Function() onConfirm;
   const _LogoutDialog({required this.onConfirm});
@@ -650,17 +596,16 @@ class _LogoutDialogState extends State<_LogoutDialog>
       scale: _scale,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(24),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
         ),
         padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Icon
             Container(
-              width: 64,
-              height: 64,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
                 color: AppColors.errorContainer,
                 shape: BoxShape.circle,
@@ -671,87 +616,78 @@ class _LogoutDialogState extends State<_LogoutDialog>
                 size: 32,
               ),
             ),
-            const SizedBox(height: 20),
-
-            // Title
+            const SizedBox(height: 24),
             Text(
               'Keluar dari Akun?',
               style: GoogleFonts.beVietnamPro(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.onSurface,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF1A1A1A),
               ),
             ),
             const SizedBox(height: 8),
-
-            // Subtitle
             Text(
               'Kamu akan keluar dari sesi ini.\nPastikan semua data telah tersimpan.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.beVietnamPro(
-                fontSize: 13,
-                color: AppColors.outline,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: Colors.grey[500],
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 28),
-
-            // Buttons
-            Row(
+            const SizedBox(height: 32),
+            Column(
+              // crossAxisAlignment memastikan kedua tombol memiliki lebar penuh yang sama
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Cancel
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed:
-                        _loading ? null : () => Navigator.of(context).pop(),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.onSurfaceVariant,
-                      side: const BorderSide(color: AppColors.outlineVariant),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                ElevatedButton(
+                  onPressed: _loading ? null : _handleConfirm,
+                  style: ElevatedButton.styleFrom(
+                    // backgroundColor: const Color(0xFFE53935),
+                    backgroundColor: AppColors.error,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Text(
-                      'Batal',
-                      style: GoogleFonts.beVietnamPro(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                ),
-                const SizedBox(width: 12),
-
-                // Confirm
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _loading ? null : _handleConfirm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.error,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: _loading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text(
-                            'Ya, Keluar',
-                            style: GoogleFonts.beVietnamPro(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                            ),
+                  child: _loading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
                           ),
+                        )
+                      : Text(
+                          'Ya, Keluar',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 12), // Jarak vertikal antar tombol
+                OutlinedButton(
+                  onPressed: _loading
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF1A1A1A),
+                    side: BorderSide(color: Colors.grey[300]!),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Text(
+                    'Batal',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
               ],

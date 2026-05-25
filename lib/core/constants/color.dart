@@ -13,6 +13,7 @@ class AppColors {
   // Legacy aliases (for backward compatibility)
   static const Color primaryLight = Color(0xFF52B788);
   static const Color primaryDark = Color(0xFF1B4332);
+  static const Color bggreen = Color(0xFFF7FBF2);
 
   // ── Secondary — Natural Beige ──
   static const Color secondary = Color(0xFF615E57);
