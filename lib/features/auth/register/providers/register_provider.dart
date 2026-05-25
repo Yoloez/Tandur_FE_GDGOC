@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tandur/features/auth/models/auth_models.dart';
+import 'package:tandur/features/auth/providers/auth_provider.dart';
 import 'package:tandur/features/auth/services/auth_service.dart';
 
 /// Manages registration state across role selection and form steps.
@@ -120,8 +121,9 @@ class RegisterProvider extends ChangeNotifier {
 
     if (response.success) {
       _registrationSuccess = true;
-      // TODO: Store token if returned
-      // if (response.token != null) ApiClient.setToken(response.token!);
+      if (response.token != null && response.token!.isNotEmpty) {
+        await AuthProvider.instance.handleTokenLogin(response.token!);
+      }
     } else {
       _errorMessage = response.message ?? 'Registrasi gagal.';
     }

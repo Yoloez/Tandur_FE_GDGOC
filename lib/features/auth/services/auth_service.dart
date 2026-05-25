@@ -40,6 +40,39 @@ class AuthService {
     }
   }
 
+  /// PATCH /users/me
+  static Future<AuthResponse> updateProfile(RegisterRequest request, {File? profilePhoto}) async {
+    try {
+      final dataMap = request.toJson();
+      final formData = FormData.fromMap(dataMap);
+
+      if (profilePhoto != null) {
+        String fileName = profilePhoto.path.split('/').last;
+        formData.files.add(
+          MapEntry(
+            'fotoProfil',
+            await MultipartFile.fromFile(profilePhoto.path, filename: fileName),
+          ),
+        );
+      }
+
+      final response = await ApiClient.dio.patch(
+        'users/me',
+        data: formData,
+      );
+
+      return AuthResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      final message = _extractErrorMessage(e);
+      return AuthResponse(success: false, message: message);
+    } catch (e) {
+      return const AuthResponse(
+        success: false,
+        message: 'Terjadi kesalahan. Coba lagi nanti.',
+      );
+    }
+  }
+
   /// POST /auth/login
   static Future<AuthResponse> login(LoginRequest request) async {
     try {

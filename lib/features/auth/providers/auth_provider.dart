@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -114,6 +115,20 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error decoding token: $e');
     }
+  }
+
+  /// Manually handle login with a provided token (e.g. from registration)
+  Future<void> handleTokenLogin(String token) async {
+    _token = token;
+    ApiClient.setToken(token);
+    _decodeToken(token);
+
+    // Save to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+
+    await fetchCurrentUser();
+    notifyListeners();
   }
 
   /// Handle login process
@@ -249,6 +264,27 @@ class AuthProvider extends ChangeNotifier {
 
     notifyListeners();
     return true;
+  }
+
+  /// Update User Profile
+  Future<bool> updateProfile(RegisterRequest request, {File? profilePhoto}) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final response = await AuthService.updateProfile(request, profilePhoto: profilePhoto);
+
+    _isLoading = false;
+
+    if (response.success) {
+      await fetchCurrentUser(); // Refresh the current user profile from backend
+      notifyListeners();
+      return true;
+    } else {
+      _errorMessage = response.message ?? 'Gagal memperbarui profil.';
+      notifyListeners();
+      return false;
+    }
   }
 
   /// Handle logout process
