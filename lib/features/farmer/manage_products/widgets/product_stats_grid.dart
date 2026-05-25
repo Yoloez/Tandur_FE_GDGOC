@@ -6,8 +6,9 @@ import '../models/managed_product_data.dart';
 /// 2×2 stats grid: Total Produk, Stok Rendah, Aktif, Habis.
 class ProductStatsGrid extends StatelessWidget {
   final ProductStats stats;
+  final bool isLoading;
 
-  const ProductStatsGrid({super.key, required this.stats});
+  const ProductStatsGrid({super.key, required this.stats, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -23,37 +24,80 @@ class ProductStatsGrid extends StatelessWidget {
           label: 'Total Produk',
           value: '${stats.totalProducts}',
           valueColor: AppColors.onSurface,
+          isLoading: isLoading,
         ),
         _StatCell(
           label: 'Stok Rendah',
           value: '${stats.lowStock}',
           valueColor: const Color(0xFFE76F51),
+          isLoading: isLoading,
         ),
         _StatCell(
           label: 'Aktif',
           value: '${stats.active}',
           valueColor: AppColors.primary,
+          isLoading: isLoading,
         ),
         _StatCell(
           label: 'Habis',
           value: '${stats.outOfStock}',
           valueColor: const Color(0xFFE76F51),
+          isLoading: isLoading,
         ),
       ],
     );
   }
 }
 
-class _StatCell extends StatelessWidget {
+class _StatCell extends StatefulWidget {
   final String label;
   final String value;
   final Color valueColor;
+  final bool isLoading;
 
   const _StatCell({
     required this.label,
     required this.value,
     required this.valueColor,
+    this.isLoading = false,
   });
+
+  @override
+  State<_StatCell> createState() => _StatCellState();
+}
+
+class _StatCellState extends State<_StatCell> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _animation = Tween<double>(begin: 0.3, end: 0.8).animate(_controller);
+    if (widget.isLoading) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _StatCell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isLoading && !oldWidget.isLoading) {
+      _controller.repeat(reverse: true);
+    } else if (!widget.isLoading && oldWidget.isLoading) {
+      _controller.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +115,7 @@ class _StatCell extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            label,
+            widget.label,
             style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w400,
@@ -79,14 +123,32 @@ class _StatCell extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: GoogleFonts.beVietnamPro(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: valueColor,
+          if (widget.isLoading)
+            AnimatedBuilder(
+              animation: _animation,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: _animation.value,
+                  child: Container(
+                    height: 24,
+                    width: 32,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                );
+              },
+            )
+          else
+            Text(
+              widget.value,
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: widget.valueColor,
+              ),
             ),
-          ),
         ],
       ),
     );

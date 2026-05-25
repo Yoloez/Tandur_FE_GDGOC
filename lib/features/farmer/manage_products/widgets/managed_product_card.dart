@@ -60,12 +60,16 @@ class ManagedProductCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Origin: ${product.origin}',
+                            product.deskripsi.isEmpty
+                                ? 'Tidak ada deskripsi'
+                                : product.deskripsi,
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w400,
                               color: AppColors.onSurfaceVariant,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -86,7 +90,7 @@ class ManagedProductCard extends StatelessWidget {
                                 ),
                               ),
                               TextSpan(
-                                text: '/${product.unit}',
+                                text: '/${product.tipeStok}',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
@@ -104,8 +108,8 @@ class ManagedProductCard extends StatelessWidget {
                               product.isOutOfStock
                                   ? 'Habis'
                                   : (product.status == ProductStatus.active
-                                      ? 'Aktif'
-                                      : 'Pending'),
+                                        ? 'Aktif'
+                                        : 'Pending'),
                               style: GoogleFonts.inter(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
@@ -118,8 +122,8 @@ class ManagedProductCard extends StatelessWidget {
                               width: 40,
                               child: Switch(
                                 value: product.status == ProductStatus.active,
-                                onChanged: product.isOutOfStock 
-                                    ? null 
+                                onChanged: product.isOutOfStock
+                                    ? null
                                     : (val) {
                                         if (onToggleActive != null) {
                                           onToggleActive!(val);
@@ -158,8 +162,8 @@ class ManagedProductCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       product.isOutOfStock
-                          ? 'Stok: 0 ${product.stockUnit}'
-                          : 'Tersedia: ${product.stock} ${product.stockUnit}',
+                          ? 'Stok: 0 ${product.tipeStok}'
+                          : 'Tersedia: ${product.stok} ${product.tipeStok}',
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -191,11 +195,11 @@ class ManagedProductCard extends StatelessWidget {
                         isDestructive: true,
                       ),
                     ] else ...[
-                      _ActionChip(
-                        icon: Icons.edit_outlined,
-                        label: 'Edit',
-                        onTap: onEdit,
-                      ),
+                      // _ActionChip(
+                      //   icon: Icons.edit_outlined,
+                      //   label: 'Edit',
+                      //   onTap: onEdit,
+                      // ),
                       const SizedBox(width: 8),
                       _ActionChip(
                         icon: Icons.delete_outline_rounded,
@@ -293,7 +297,9 @@ class _ImageSection extends StatelessWidget {
       case ProductStatus.outOfStock:
         return AppColors.onSurfaceVariant;
       case ProductStatus.pending:
-        return const Color(0xFFF4A261); // Orange/warning color
+        return const Color(0xFFF4A261);
+      case ProductStatus.nonActive:
+        return const Color(0xFF9E9E9E);
       case ProductStatus.active:
         return AppColors.primary;
     }
@@ -305,18 +311,28 @@ class _ImageSection extends StatelessWidget {
         return 'Habis';
       case ProductStatus.pending:
         return 'Pending';
+      case ProductStatus.nonActive:
+        return 'Nonaktif';
       case ProductStatus.active:
         return 'Aktif';
     }
   }
 
   Widget _buildProductImage() {
-    final image = product.image;
-    final isNetwork = image.startsWith('http');
-
-    if (isNetwork) {
+    final imageUrl = product.imageUrl;
+    if (imageUrl.isEmpty) {
+      return Container(
+        color: AppColors.surfaceContainerLow,
+        child: const Icon(
+          Icons.eco_rounded,
+          size: 48,
+          color: AppColors.outline,
+        ),
+      );
+    }
+    if (imageUrl.startsWith('http')) {
       return Image.network(
-        image,
+        imageUrl,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => Container(
           color: AppColors.surfaceContainerLow,
@@ -328,9 +344,8 @@ class _ImageSection extends StatelessWidget {
         ),
       );
     }
-
     return Image.asset(
-      image,
+      imageUrl,
       fit: BoxFit.cover,
       errorBuilder: (context, error, stackTrace) => Container(
         color: AppColors.surfaceContainerLow,
@@ -405,6 +420,138 @@ class _ActionChip extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Skeleton Loading Card
+// ─────────────────────────────────────────────
+class ManagedProductCardSkeleton extends StatefulWidget {
+  const ManagedProductCardSkeleton({super.key});
+
+  @override
+  State<ManagedProductCardSkeleton> createState() =>
+      _ManagedProductCardSkeletonState();
+}
+
+class _ManagedProductCardSkeletonState
+    extends State<ManagedProductCardSkeleton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.3, end: 0.8).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _animation.value,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.outlineVariant.withValues(alpha: 0.4),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image skeleton
+                Container(
+                  height: 140,
+                  decoration: const BoxDecoration(
+                    color: AppColors.surfaceContainerLow,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(15),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Name & Toggle skeleton
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  height: 20,
+                                  color: AppColors.surfaceContainerHigh,
+                                ),
+                                const SizedBox(height: 6),
+                                Container(
+                                  height: 14,
+                                  width: 150,
+                                  color: AppColors.surfaceContainerHigh,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Container(
+                            height: 24,
+                            width: 60,
+                            color: AppColors.surfaceContainerHigh,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(color: AppColors.outlineVariant),
+                      const SizedBox(height: 12),
+                      // Actions skeleton
+                      Row(
+                        children: [
+                          Container(
+                            height: 36,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceContainerHigh,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            height: 36,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceContainerHigh,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

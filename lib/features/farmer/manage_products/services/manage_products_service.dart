@@ -5,17 +5,46 @@ import 'package:tandur/features/farmer/manage_products/models/managed_product_da
 class ManageProductsService {
   const ManageProductsService._();
 
-  static Future<List<ManagedProduct>> fetchProducts({
-    required String kategori,
+  /// Fetch farmer's own products from GET /products/me
+  /// [status] can be 'active', 'non-active', or 'pending'.
+  static Future<({List<ManagedProduct> products, ProductMeta meta})> fetchMyProducts({
+    int page = 1,
+    int limit = 10,
+    String? status,
   }) async {
     try {
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'limit': limit,
+      };
+      if (status != null && status.isNotEmpty) {
+        queryParams['status'] = status;
+      }
+
       final response = await ApiClient.dio.get(
-        'products',
-        queryParameters: {'kategori': kategori},
+        '/products/me',
+        queryParameters: queryParams,
       );
 
-      final rawList = _extractList(response.data);
-      return rawList.map((e) => ManagedProduct.fromJson(e)).toList();
+      final data = response.data;
+      List<ManagedProduct> products = [];
+      ProductMeta meta = const ProductMeta(total: 0, page: 1, limit: 10, totalPages: 1);
+
+      if (data is Map) {
+        // Parse meta
+        if (data['meta'] is Map) {
+          meta = ProductMeta.fromJson(Map<String, dynamic>.from(data['meta']));
+        }
+        // Parse data list
+        if (data['data'] is List) {
+          products = (data['data'] as List)
+              .whereType<Map>()
+              .map((e) => ManagedProduct.fromJson(Map<String, dynamic>.from(e)))
+              .toList();
+        }
+      }
+
+      return (products: products, meta: meta);
     } on DioException catch (e) {
       throw Exception(_extractErrorMessage(e));
     } catch (_) {
@@ -23,10 +52,22 @@ class ManageProductsService {
     }
   }
 
+  /// Delete a product by ID using DELETE /products/{id}
+  static Future<void> deleteProduct(String id) async {
+    try {
+      await ApiClient.dio.delete('/products/$id');
+    } on DioException catch (e) {
+      throw Exception(_extractErrorMessage(e));
+    } catch (_) {
+      throw Exception('Gagal menghapus produk.');
+    }
+  }
+
+  /// Update product status using PATCH /products/{id}/status
   static Future<void> updateProductStatus(String id, String status) async {
     try {
       await ApiClient.dio.patch(
-        'products/$id/status',
+        '/products/$id/status',
         data: {'status': status},
       );
     } on DioException catch (e) {
@@ -36,44 +77,11 @@ class ManageProductsService {
     }
   }
 
-  static List<Map<String, dynamic>> _extractList(dynamic data) {
-    if (data is List) {
-      return data.whereType<Map>().cast<Map<String, dynamic>>().toList();
-    }
-
-    if (data is Map) {
-      if (data['data'] is List) {
-        return (data['data'] as List)
-            .whereType<Map>()
-            .cast<Map<String, dynamic>>()
-            .toList();
-      }
-      if (data['products'] is List) {
-        return (data['products'] as List)
-            .whereType<Map>()
-            .cast<Map<String, dynamic>>()
-            .toList();
-      }
-      if (data['items'] is List) {
-        return (data['items'] as List)
-            .whereType<Map>()
-            .cast<Map<String, dynamic>>()
-            .toList();
-      }
-      if (data['id'] != null) {
-        return [data.cast<String, dynamic>()];
-      }
-    }
-
-    return [];
-  }
-
   static String _extractErrorMessage(DioException e) {
     if (e.response?.data is Map) {
       final data = e.response!.data as Map;
-      return data['message'] ?? 'Terjadi kesalahan pada server.';
+      return data['message']?.toString() ?? 'Terjadi kesalahan pada server.';
     }
-
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.receiveTimeout:
