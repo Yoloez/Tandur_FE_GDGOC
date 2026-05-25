@@ -20,6 +20,7 @@ import 'package:tandur/features/welcome/welcome_screen.dart';
 import 'package:tandur/features/buyer/cart/cart_screen.dart';
 import 'package:tandur/features/buyer/checkout/checkout_screen.dart';
 import 'package:tandur/features/buyer/market/buyer_market_screen.dart';
+import 'package:tandur/features/buyer/farmers/farmer_list_screen.dart';
 
 class AppRoutes {
   static const String splash = 'splash';
@@ -43,6 +44,7 @@ class AppRoutes {
   static const String productDetail = 'product-detail';
   static const String buyerCart = 'buyer-cart';
   static const String buyerCheckout = 'buyer-checkout';
+  static const String farmerList = 'farmer-list';
 }
 
 class AppRouter {
@@ -232,6 +234,13 @@ class AppRouter {
         builder: (context, state) => const CheckoutScreen(),
       ),
 
+      // ── Farmer List (no bottom nav) ──
+      GoRoute(
+        name: AppRoutes.farmerList,
+        path: '/farmer-list',
+        builder: (context, state) => const FarmerListScreen(),
+      ),
+
       // ── Farmer manage products (no bottom nav) ──
       GoRoute(
         name: AppRoutes.farmerManageProducts,
@@ -289,7 +298,10 @@ class AppRouter {
           GoRoute(
             name: AppRoutes.buyerMarket,
             path: '/buyer/market',
-            builder: (context, state) => const BuyerMarketScreen(),
+            builder: (context, state) {
+              final query = state.uri.queryParameters['q'];
+              return BuyerMarketScreen(initialSearchQuery: query);
+            },
           ),
           GoRoute(
             name: AppRoutes.buyerProfile,

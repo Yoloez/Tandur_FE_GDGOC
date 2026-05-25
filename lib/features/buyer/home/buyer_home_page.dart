@@ -24,6 +24,14 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
     super.initState();
     _provider = BuyerHomeProvider();
     _provider.loadProducts();
+    _provider.loadFarmers();
+  }
+
+  Future<void> _handleRefresh() async {
+    await Future.wait([
+      _provider.loadProducts(),
+      _provider.loadFarmers(),
+    ]);
   }
 
   @override
@@ -35,7 +43,7 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
           listenable: _provider,
           builder: (context, _) {
             return RefreshIndicator(
-              onRefresh: _provider.loadProducts,
+              onRefresh: _handleRefresh,
               color: AppColors.primary,
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -83,8 +91,12 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
                         // ── Verified farmers ──
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child:
-                              VerifiedFarmersSection(farmers: _provider.farmers),
+                          child: VerifiedFarmersSection(
+                            farmers: _provider.farmers,
+                            isLoading: _provider.isLoadingFarmers,
+                            errorMessage: _provider.farmersError,
+                            onRetry: _provider.loadFarmers,
+                          ),
                         ),
 
                         const SizedBox(height: 24),
