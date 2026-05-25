@@ -7,7 +7,9 @@ import 'package:tandur/features/buyer/home/models/buyer_home_data.dart';
 import 'providers/buyer_market_provider.dart';
 
 class BuyerMarketScreen extends StatefulWidget {
-  const BuyerMarketScreen({super.key});
+  final String? initialSearchQuery;
+
+  const BuyerMarketScreen({super.key, this.initialSearchQuery});
 
   @override
   State<BuyerMarketScreen> createState() => _BuyerMarketScreenState();
@@ -15,11 +17,22 @@ class BuyerMarketScreen extends StatefulWidget {
 
 class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
   late final BuyerMarketProvider _provider;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _provider = BuyerMarketProvider();
+    if (widget.initialSearchQuery != null) {
+      _searchController.text = widget.initialSearchQuery!;
+    }
+    _provider.initialize(initialSearchQuery: widget.initialSearchQuery);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -34,6 +47,9 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
               children: [
                 // ── Header ──
                 _buildHeader(),
+
+                // ── Search Bar ──
+                _buildSearchBar(),
 
                 // ── Category Chips ──
                 _buildCategoryRow(),
@@ -70,7 +86,7 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'Produk segar langsung dari petani lokal',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 13,
                     fontWeight: FontWeight.w400,
                     color: AppColors.onSurfaceVariant,
@@ -88,7 +104,7 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
               ),
               child: Text(
                 '${_provider.meta.total} produk',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.beVietnamPro(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
@@ -96,6 +112,66 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  // ────────────────────────────────────────────────
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+      child: TextField(
+        controller: _searchController,
+        textInputAction: TextInputAction.search,
+        onSubmitted: (value) {
+          _provider.setSearchQuery(value.trim());
+        },
+        decoration: InputDecoration(
+          hintText: 'Cari barang di pasar...',
+          hintStyle: GoogleFonts.beVietnamPro(
+            color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
+            fontSize: 14,
+          ),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: AppColors.primary,
+          ),
+          suffixIcon:
+              _provider.searchQuery != null && _provider.searchQuery!.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                  onPressed: () {
+                    _searchController.clear();
+                    _provider.clearSearchQuery();
+                  },
+                )
+              : null,
+          filled: true,
+          fillColor: AppColors.surfaceContainerLowest,
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 14,
+            horizontal: 16,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: AppColors.outlineVariant.withValues(alpha: 0.5),
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: AppColors.outlineVariant.withValues(alpha: 0.5),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          ),
+        ),
       ),
     );
   }
@@ -229,7 +305,7 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Text(
                   '…',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 14,
                     color: AppColors.onSurfaceVariant,
                   ),
@@ -331,7 +407,7 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
               icon: const Icon(Icons.refresh_rounded, size: 20),
               label: Text(
                 'Coba Lagi',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -355,6 +431,9 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
   }
 
   Widget _buildEmpty() {
+    final hasSearch =
+        _provider.searchQuery != null && _provider.searchQuery!.isNotEmpty;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -367,27 +446,31 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
                 color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.grass_rounded,
+              child: Icon(
+                hasSearch ? Icons.search_off_rounded : Icons.grass_rounded,
                 color: AppColors.primary,
                 size: 48,
               ),
             ),
             const SizedBox(height: 18),
             Text(
-              'Belum Ada Produk',
+              hasSearch ? 'Barang Tidak Ditemukan' : 'Belum Ada Produk',
               style: GoogleFonts.beVietnamPro(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppColors.onSurface,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
-              'Kategori ini belum memiliki produk yang terdaftar.',
+              hasSearch
+                  ? 'Kami tidak dapat menemukan produk "${_provider.searchQuery}" yang kamu cari.'
+                  : (_provider.selectedCategory == null
+                        ? 'Saat ini belum ada produk yang dijual di pasar.'
+                        : 'Belum ada produk di kategori ini.'),
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 13,
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 14,
                 color: AppColors.onSurfaceVariant,
               ),
             ),
@@ -430,7 +513,7 @@ class _CategoryChip extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             color: isSelected ? Colors.white : AppColors.onSurfaceVariant,
@@ -475,7 +558,7 @@ class _PaginationPage extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(
           '$page',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 13,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
             color: isActive ? Colors.white : AppColors.onSurface,
@@ -715,7 +798,7 @@ class _MarketProductCard extends StatelessWidget {
                           ),
                           child: Text(
                             product.badge!,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -738,7 +821,7 @@ class _MarketProductCard extends StatelessWidget {
                   children: [
                     Text(
                       product.farmName,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 11,
                         fontWeight: FontWeight.w400,
                         color: AppColors.onSurfaceVariant,
@@ -749,7 +832,7 @@ class _MarketProductCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       product.productName,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: AppColors.onSurface,
@@ -780,7 +863,7 @@ class _MarketProductCard extends StatelessWidget {
                                   product.tipeStok!.isNotEmpty)
                                 Text(
                                   '/${product.tipeStok}',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.beVietnamPro(
                                     fontSize: 10,
                                     color: AppColors.onSurfaceVariant,
                                   ),

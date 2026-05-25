@@ -8,6 +8,7 @@ class BuyerMarketProvider extends ChangeNotifier {
   List<ProductItem> _products = [];
   bool _isLoading = true;
   String? _errorMessage;
+  String? _searchQuery;
 
   // ── Pagination ──
   int _currentPage = 1;
@@ -22,6 +23,7 @@ class BuyerMarketProvider extends ChangeNotifier {
   List<ProductItem> get products => _products;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  String? get searchQuery => _searchQuery;
 
   int get currentPage => _currentPage;
   ProductMeta get meta => _meta;
@@ -37,6 +39,13 @@ class BuyerMarketProvider extends ChangeNotifier {
 
   Future<void> _init() async {
     await _loadCategories();
+    // Intentionally not calling loadProducts here, it will be called by initialize
+  }
+  
+  Future<void> initialize({String? initialSearchQuery}) async {
+    if (initialSearchQuery != null) {
+      _searchQuery = initialSearchQuery;
+    }
     await loadProducts();
   }
 
@@ -62,6 +71,7 @@ class BuyerMarketProvider extends ChangeNotifier {
     try {
       final result = await BuyerMarketService.fetchProducts(
         kategoriId: _selectedCategory?.id,
+        searchQuery: _searchQuery,
         page: _currentPage,
       );
       _products = result.products;
@@ -78,6 +88,20 @@ class BuyerMarketProvider extends ChangeNotifier {
   void setCategory(ProductCategory? category) {
     if (_selectedCategory?.id == category?.id) return;
     _selectedCategory = category;
+    _currentPage = 1;
+    loadProducts();
+  }
+
+  void setSearchQuery(String? query) {
+    if (_searchQuery == query) return;
+    _searchQuery = query;
+    _currentPage = 1;
+    loadProducts();
+  }
+
+  void clearSearchQuery() {
+    if (_searchQuery == null) return;
+    _searchQuery = null;
     _currentPage = 1;
     loadProducts();
   }
