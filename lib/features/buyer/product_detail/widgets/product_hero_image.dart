@@ -1,7 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tandur/core/constants/color.dart';
+import 'package:tandur/core/routing/app_router.dart';
+import 'package:tandur/features/buyer/cart/providers/cart_provider.dart';
 
 /// Full-width product hero image using SliverAppBar with a glassmorphism
 /// toolbar bar that stays pinned while the image scrolls away.
@@ -124,7 +128,22 @@ class ProductHeroImage extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           // ── Wishlist button ──
-                          _WishlistButton(collapsed: t > 0.85),
+                          // _WishlistButton(collapsed: t > 0.85),
+                          // const SizedBox(width: 6),
+                          // ── Cart button with Badge ──
+                          ListenableBuilder(
+                            listenable: CartProvider.instance,
+                            builder: (context, child) {
+                              final totalItems =
+                                  CartProvider.instance.totalItems;
+                              return _CartIconButton(
+                                totalItems: totalItems,
+                                collapsed: t > 0.85,
+                                onTap: () =>
+                                    context.pushNamed(AppRoutes.buyerCart),
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -217,76 +236,145 @@ class _ActionIcon extends StatelessWidget {
   }
 }
 
-// ── Stateful Wishlist / Favorite button with bounce animation ──
-class _WishlistButton extends StatefulWidget {
+// ── Cart button with numeric Badge ──
+class _CartIconButton extends StatelessWidget {
+  final int totalItems;
   final bool collapsed;
-  const _WishlistButton({required this.collapsed});
+  final VoidCallback onTap;
 
-  @override
-  State<_WishlistButton> createState() => _WishlistButtonState();
-}
-
-class _WishlistButtonState extends State<_WishlistButton>
-    with SingleTickerProviderStateMixin {
-  bool _liked = false;
-  late final AnimationController _ctrl;
-  late final Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _scale = Tween<double>(
-      begin: 1.0,
-      end: 1.3,
-    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut));
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  void _toggle() {
-    setState(() => _liked = !_liked);
-    _ctrl.forward(from: 0.0);
-  }
+  const _CartIconButton({
+    required this.totalItems,
+    required this.collapsed,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _toggle,
-      child: AnimatedBuilder(
-        animation: _scale,
-        builder: (context, child) =>
-            Transform.scale(scale: _scale.value, child: child),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: _liked
-                ? Colors.red.withValues(alpha: 0.85)
-                : widget.collapsed
-                ? AppColors.surfaceContainerLow
-                : Colors.white.withValues(alpha: 0.15),
-            shape: BoxShape.circle,
+      onTap: onTap,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: collapsed
+                  ? AppColors.surfaceContainerLow
+                  : Colors.white.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.shopping_cart_outlined,
+              size: 21,
+              color: collapsed ? AppColors.onSurface : Colors.white,
+            ),
           ),
-          child: Icon(
-            _liked ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-            size: 21,
-            color: _liked
-                ? Colors.white
-                : widget.collapsed
-                ? AppColors.onSurface
-                : Colors.white,
-          ),
-        ),
+          if (totalItems > 0)
+            Positioned(
+              right: -2,
+              top: -2,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: collapsed
+                        ? AppColors.surface
+                        : Colors.black.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    totalItems.toString(),
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
 }
+
+// ── Stateful Wishlist / Favorite button with bounce animation ──
+// class _WishlistButton extends StatefulWidget {
+//   final bool collapsed;
+//   const _WishlistButton({required this.collapsed});
+
+//   @override
+//   State<_WishlistButton> createState() => _WishlistButtonState();
+// }
+
+// class _WishlistButtonState extends State<_WishlistButton>
+//     with SingleTickerProviderStateMixin {
+//   bool _liked = false;
+//   late final AnimationController _ctrl;
+//   late final Animation<double> _scale;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _ctrl = AnimationController(
+//       vsync: this,
+//       duration: const Duration(milliseconds: 300),
+//     );
+//     _scale = Tween<double>(
+//       begin: 1.0,
+//       end: 1.3,
+//     ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut));
+//   }
+
+//   @override
+//   void dispose() {
+//     _ctrl.dispose();
+//     super.dispose();
+//   }
+
+//   void _toggle() {
+//     setState(() => _liked = !_liked);
+//     _ctrl.forward(from: 0.0);
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return GestureDetector(
+//       onTap: _toggle,
+//       child: AnimatedBuilder(
+//         animation: _scale,
+//         builder: (context, child) =>
+//             Transform.scale(scale: _scale.value, child: child),
+//         child: AnimatedContainer(
+//           duration: const Duration(milliseconds: 250),
+//           width: 40,
+//           height: 40,
+//           decoration: BoxDecoration(
+//             color: _liked
+//                 ? Colors.red.withValues(alpha: 0.85)
+//                 : widget.collapsed
+//                     ? AppColors.surfaceContainerLow
+//                     : Colors.white.withValues(alpha: 0.15),
+//             shape: BoxShape.circle,
+//           ),
+//           child: Icon(
+//             _liked ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+//             size: 21,
+//             color: _liked
+//                 ? Colors.white
+//                 : widget.collapsed
+//                     ? AppColors.onSurface
+//                     : Colors.white,
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
