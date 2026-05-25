@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:tandur/features/buyer/home/services/buyer_home_service.dart';
 import 'package:tandur/features/buyer/market/services/buyer_market_service.dart';
 import '../models/buyer_home_data.dart';
 
 /// Provides data for the buyer home screen.
 ///
-/// Static data (categories, farmers) is kept in-memory.
-/// Products are fetched from the backend via [BuyerMarketService].
+/// Static data (categories) is kept in-memory.
+/// Farmers and Products are fetched from the backend.
 class BuyerHomeProvider extends ChangeNotifier {
   String get location => 'Jakarta Selatan';
 
@@ -17,12 +18,14 @@ class BuyerHomeProvider extends ChangeNotifier {
     CategoryItem(icon: Icons.spa_rounded, label: 'Bumbu'),
   ];
 
-  // ── Verified farmers ──
-  List<FarmerItem> get farmers => const [
-    FarmerItem(name: 'Pak Budi', location: 'Malang, Jatim', rating: 4.9),
-    FarmerItem(name: 'Ibu Sari', location: 'Lembang, Jabar', rating: 4.8),
-    FarmerItem(name: 'Mas Hendra', location: 'Karawang, Jabar', rating: 4.7),
-  ];
+  // ── Verified farmers (from API) ──
+  List<FarmerItem> _farmers = [];
+  bool _isLoadingFarmers = false;
+  String? _farmersError;
+
+  List<FarmerItem> get farmers => _farmers;
+  bool get isLoadingFarmers => _isLoadingFarmers;
+  String? get farmersError => _farmersError;
 
   // ── Fresh products (from API) ──
   List<ProductItem> _products = [];
@@ -32,6 +35,23 @@ class BuyerHomeProvider extends ChangeNotifier {
   List<ProductItem> get products => _products;
   bool get isLoadingProducts => _isLoadingProducts;
   String? get productsError => _productsError;
+
+  /// Fetch the top 4 farmers
+  Future<void> loadFarmers() async {
+    _isLoadingFarmers = true;
+    _farmersError = null;
+    notifyListeners();
+
+    try {
+      _farmers = await BuyerHomeService.fetchFarmers(page: 1, limit: 4);
+    } catch (e) {
+      _farmersError = e.toString().replaceAll('Exception: ', '');
+      _farmers = [];
+    } finally {
+      _isLoadingFarmers = false;
+      notifyListeners();
+    }
+  }
 
   /// Fetch the latest products from the backend.
   /// Fetches without category filter to get all latest products.
