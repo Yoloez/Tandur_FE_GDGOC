@@ -23,8 +23,7 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
   void initState() {
     super.initState();
     _provider = BuyerHomeProvider();
-    _provider.loadProducts();
-    _provider.loadFarmers();
+    _provider.loadInitialData();
   }
 
   Future<void> _handleRefresh() async {

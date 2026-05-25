@@ -8,6 +8,12 @@ import '../models/buyer_home_data.dart';
 /// Static data (categories) is kept in-memory.
 /// Farmers and Products are fetched from the backend.
 class BuyerHomeProvider extends ChangeNotifier {
+  static final BuyerHomeProvider instance = BuyerHomeProvider._internal();
+  BuyerHomeProvider._internal();
+  factory BuyerHomeProvider() => instance;
+
+  bool _hasFetchedInitially = false;
+
   String get location => 'Jakarta Selatan';
 
   // ── Categories ──
@@ -36,6 +42,15 @@ class BuyerHomeProvider extends ChangeNotifier {
   bool get isLoadingProducts => _isLoadingProducts;
   String? get productsError => _productsError;
 
+  Future<void> loadInitialData() async {
+    if (_hasFetchedInitially) return;
+    _hasFetchedInitially = true;
+    
+    // We don't await here to let them load in parallel and notify independently
+    loadFarmers();
+    loadProducts();
+  }
+
   /// Fetch the top 4 farmers
   Future<void> loadFarmers() async {
     _isLoadingFarmers = true;
@@ -43,7 +58,7 @@ class BuyerHomeProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _farmers = await BuyerHomeService.fetchFarmers(page: 1, limit: 4);
+      _farmers = await BuyerHomeService.fetchFarmers(page: 4, limit: 4);
     } catch (e) {
       _farmersError = e.toString().replaceAll('Exception: ', '');
       _farmers = [];

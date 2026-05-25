@@ -30,6 +30,16 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
   }
 
   @override
+  void didUpdateWidget(covariant BuyerMarketScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialSearchQuery != oldWidget.initialSearchQuery && 
+        widget.initialSearchQuery != null) {
+      _searchController.text = widget.initialSearchQuery!;
+      _provider.setSearchQuery(widget.initialSearchQuery!);
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();

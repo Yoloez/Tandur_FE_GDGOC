@@ -9,9 +9,9 @@ import 'package:tandur/core/routing/app_router.dart';
 /// Matches the design reference: vertical icon + label, green active indicator
 /// line above selected item, clean surface background.
 class FarmerBottomNav extends StatelessWidget {
-  final int currentIndex;
+  final StatefulNavigationShell navigationShell;
 
-  const FarmerBottomNav({super.key, required this.currentIndex});
+  const FarmerBottomNav({super.key, required this.navigationShell});
 
   static const _items = [
     _NavItem(
@@ -37,18 +37,12 @@ class FarmerBottomNav extends StatelessWidget {
   ];
 
   void _onTap(BuildContext context, int index) {
-    if (index == currentIndex) return;
+    if (index == navigationShell.currentIndex) return;
 
-    switch (index) {
-      case 0:
-        context.goNamed(AppRoutes.farmerHome);
-      case 1:
-        context.goNamed(AppRoutes.farmerMarket);
-      case 2:
-        context.goNamed(AppRoutes.farmerNotifications);
-      case 3:
-        context.goNamed(AppRoutes.farmerProfile);
-    }
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
   }
 
   @override
@@ -70,7 +64,7 @@ class FarmerBottomNav extends StatelessWidget {
           child: Row(
             children: List.generate(_items.length, (index) {
               final item = _items[index];
-              final isActive = index == currentIndex;
+              final isActive = index == navigationShell.currentIndex;
 
               return Expanded(
                 child: GestureDetector(

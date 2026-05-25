@@ -5,33 +5,24 @@ import 'package:tandur/core/routing/app_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppBottomNav extends StatelessWidget {
-  final int currentIndex;
+  final StatefulNavigationShell navigationShell;
 
-  const AppBottomNav({super.key, required this.currentIndex});
+  const AppBottomNav({super.key, required this.navigationShell});
 
   void _onTap(BuildContext context, int index) {
-    if (index == currentIndex) {
+    if (index == 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Fitur belum tersedia.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
-
-    switch (index) {
-      case 0:
-        context.goNamed(AppRoutes.buyerHome);
-        return;
-      case 1:
-        context.goNamed(AppRoutes.buyerMarket);
-        return;
-      case 3:
-        context.goNamed(AppRoutes.buyerProfile);
-        return;
-      default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Fitur belum tersedia.'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-    }
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
   }
 
   @override
@@ -60,7 +51,7 @@ class AppBottomNav extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(items.length, (index) {
-              final isSelected = index == currentIndex;
+              final isSelected = index == navigationShell.currentIndex;
               return GestureDetector(
                 onTap: () => _onTap(context, index),
                 behavior: HitTestBehavior.opaque,

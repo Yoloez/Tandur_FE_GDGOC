@@ -4,6 +4,12 @@ import 'package:tandur/features/farmer/upload_product/models/product_category.da
 import '../services/buyer_market_service.dart';
 
 class BuyerMarketProvider extends ChangeNotifier {
+  static final BuyerMarketProvider instance = BuyerMarketProvider._internal();
+  BuyerMarketProvider._internal() {
+    _init();
+  }
+  factory BuyerMarketProvider() => instance;
+
   // ── Products state ──
   List<ProductItem> _products = [];
   bool _isLoading = true;
@@ -18,6 +24,7 @@ class BuyerMarketProvider extends ChangeNotifier {
   List<ProductCategory> _apiCategories = [];
   ProductCategory? _selectedCategory; // null = "Semua"
   bool _isLoadingCategories = false;
+  bool _hasFetchedInitially = false;
 
   // ── Getters ──
   List<ProductItem> get products => _products;
@@ -33,19 +40,19 @@ class BuyerMarketProvider extends ChangeNotifier {
   ProductCategory? get selectedCategory => _selectedCategory;
   bool get isLoadingCategories => _isLoadingCategories;
 
-  BuyerMarketProvider() {
-    _init();
-  }
-
   Future<void> _init() async {
     await _loadCategories();
-    // Intentionally not calling loadProducts here, it will be called by initialize
   }
   
   Future<void> initialize({String? initialSearchQuery}) async {
-    if (initialSearchQuery != null) {
+    if (initialSearchQuery != null && initialSearchQuery != _searchQuery) {
       _searchQuery = initialSearchQuery;
+      _hasFetchedInitially = false; // Force refetch if search query changed from external
     }
+    
+    if (_hasFetchedInitially) return;
+    _hasFetchedInitially = true;
+    
     await loadProducts();
   }
 

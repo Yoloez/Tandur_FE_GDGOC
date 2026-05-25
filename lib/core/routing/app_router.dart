@@ -256,57 +256,94 @@ class AppRouter {
       ),
 
       // ── Farmer shell with bottom navbar ──
-      ShellRoute(
-        builder: (context, state, child) {
-          return FarmerShell(location: state.uri.path, child: child);
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return FarmerShell(navigationShell: navigationShell);
         },
-        routes: [
-          GoRoute(
-            name: AppRoutes.farmerHome,
-            path: '/farmer/home',
-            builder: (context, state) => const FarmerHomeScreen(),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                name: AppRoutes.farmerHome,
+                path: '/farmer/home',
+                builder: (context, state) => const FarmerHomeScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            name: AppRoutes.farmerMarket,
-            path: '/farmer/market',
-            builder: (context, state) => const FarmerMarketScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                name: AppRoutes.farmerMarket,
+                path: '/farmer/market',
+                builder: (context, state) => const FarmerMarketScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            name: AppRoutes.farmerNotifications,
-            path: '/farmer/notifications',
-            builder: (context, state) => const FarmerNotificationsScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                name: AppRoutes.farmerNotifications,
+                path: '/farmer/notifications',
+                builder: (context, state) => const FarmerNotificationsScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            name: AppRoutes.farmerProfile,
-            path: '/farmer/profile',
-            builder: (context, state) => const FarmerProfileScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                name: AppRoutes.farmerProfile,
+                path: '/farmer/profile',
+                builder: (context, state) => const FarmerProfileScreen(),
+              ),
+            ],
           ),
         ],
       ),
 
       // ── Buyer shell (existing) ──
-      ShellRoute(
-        builder: (context, state, child) {
-          return AppShell(location: state.uri.path, child: child);
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return AppShell(navigationShell: navigationShell);
         },
-        routes: [
-          GoRoute(
-            name: AppRoutes.buyerHome,
-            path: '/buyer/home',
-            builder: (context, state) => const BuyerHomeScreen(),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                name: AppRoutes.buyerHome,
+                path: '/buyer/home',
+                builder: (context, state) => const BuyerHomeScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            name: AppRoutes.buyerMarket,
-            path: '/buyer/market',
-            builder: (context, state) {
-              final query = state.uri.queryParameters['q'];
-              return BuyerMarketScreen(initialSearchQuery: query);
-            },
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                name: AppRoutes.buyerMarket,
+                path: '/buyer/market',
+                builder: (context, state) {
+                  final query = state.uri.queryParameters['q'];
+                  return BuyerMarketScreen(initialSearchQuery: query);
+                },
+              ),
+            ],
           ),
-          GoRoute(
-            name: AppRoutes.buyerProfile,
-            path: '/buyer/profile',
-            builder: (context, state) => const BuyerProfileScreen(),
+          // Empty branch for 'Pantau' to match bottom nav index 2
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/buyer/pantau',
+                builder: (context, state) => const Scaffold(body: Center(child: Text('Fitur belum tersedia.'))),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                name: AppRoutes.buyerProfile,
+                path: '/buyer/profile',
+                builder: (context, state) => const BuyerProfileScreen(),
+              ),
+            ],
           ),
         ],
       ),
