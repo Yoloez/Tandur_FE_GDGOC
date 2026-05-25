@@ -10,17 +10,34 @@ class CategoryItem {
 
 /// A verified farmer card.
 class FarmerItem {
+  final String id;
   final String name;
   final String location;
   final double rating;
   final String? avatarUrl;
 
   const FarmerItem({
+    required this.id,
     required this.name,
     required this.location,
     required this.rating,
     this.avatarUrl,
   });
+
+  factory FarmerItem.fromJson(Map<String, dynamic> json) {
+    final profile = json['profile'] as Map<String, dynamic>? ?? {};
+    final loc = json['location'] as Map<String, dynamic>? ?? {};
+    
+    return FarmerItem(
+      id: json['id'] ?? '',
+      name: profile['namaLengkap'] ?? 'Petani Tanpa Nama',
+      location: loc['formattedAddress']?.toString().isNotEmpty == true 
+          ? loc['formattedAddress'] 
+          : 'Lokasi tidak diketahui',
+      rating: 5.0, // Hardcoded since API doesn't provide rating
+      avatarUrl: profile['fotoProfil'],
+    );
+  }
 }
 
 /// A product card in the "Produk Segar" grid.
