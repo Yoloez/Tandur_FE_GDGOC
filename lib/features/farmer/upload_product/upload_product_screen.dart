@@ -88,14 +88,33 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
     }
   }
 
-  void _onGenerateAI() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Fitur AI deskripsi belum tersedia.'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+  Future<void> _onGenerateAI() async {
+    final namaProduk = _nameController.text.trim();
+    if (namaProduk.isEmpty) {
+      _showError('Isi nama produk terlebih dahulu.');
+      return;
+    }
+    if (_selectedImages.isEmpty) {
+      _showError('Upload foto produk terlebih dahulu.');
+      return;
+    }
+    if (_provider.selectedCategory == null) {
+      _showError('Pilih kategori produk terlebih dahulu.');
+      return;
+    }
+
+    final desc = await _provider.generateAiDescription(
+      photo: _selectedImages.first,
+      namaProduk: namaProduk,
     );
+
+    if (!mounted) return;
+
+    if (desc != null) {
+      _descController.text = desc;
+    } else {
+      _showError(_provider.errorMessage ?? 'Gagal generate deskripsi AI.');
+    }
   }
 
   void _onSaveDraft() {
@@ -475,26 +494,53 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildLabel('Deskripsi Produk'),
-        GestureDetector(
-          onTap: _onGenerateAI,
-          child: Row(
-            children: [
-              const Icon(
-                Icons.auto_awesome,
-                size: 14,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                'Gunakan AI',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+        ListenableBuilder(
+          listenable: _provider,
+          builder: (context, _) {
+            final isLoading = _provider.isGeneratingAi;
+            return GestureDetector(
+              onTap: isLoading ? null : _onGenerateAI,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isLoading
+                      ? AppColors.primary.withValues(alpha: 0.08)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isLoading)
+                      const SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    else
+                      const Icon(
+                        Icons.auto_awesome,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                    const SizedBox(width: 4),
+                    Text(
+                      isLoading ? 'Membuat deskripsi...' : 'Gunakan AI',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ],
     );

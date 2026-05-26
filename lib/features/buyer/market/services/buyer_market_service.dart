@@ -52,9 +52,9 @@ class BuyerMarketService {
     }
   }
 
-  /// GET /products with pagination and optional kategoriId and search filters.
+  /// GET /products with pagination and optional kategoriId, search, and sort filters.
   static Future<({List<ProductItem> products, ProductMeta meta})>
-  fetchProducts({String? kategoriId, String? searchQuery, int page = 1}) async {
+  fetchProducts({String? kategoriId, String? searchQuery, int page = 1, String? sort}) async {
     try {
       final queryParams = <String, dynamic>{'page': page, 'limit': _pageLimit};
       if (kategoriId != null && kategoriId.isNotEmpty) {
@@ -62,6 +62,9 @@ class BuyerMarketService {
       }
       if (searchQuery != null && searchQuery.isNotEmpty) {
         queryParams['search'] = searchQuery;
+      }
+      if (sort != null && sort.isNotEmpty) {
+        queryParams['sort'] = sort;
       }
 
       final response = await ApiClient.dio.get(

@@ -19,12 +19,14 @@ class UploadProductProvider extends ChangeNotifier {
   // ── State ──
   bool _isSubmitting = false;
   bool _isLoadingCategories = false;
+  bool _isGeneratingAi = false;
   String? _errorMessage;
   List<ProductCategory> _categories = [];
   ProductCategory? _selectedCategory;
 
   bool get isSubmitting => _isSubmitting;
   bool get isLoadingCategories => _isLoadingCategories;
+  bool get isGeneratingAi => _isGeneratingAi;
   String? get errorMessage => _errorMessage;
   List<ProductCategory> get categories => _categories;
   ProductCategory? get selectedCategory => _selectedCategory;
@@ -50,6 +52,38 @@ class UploadProductProvider extends ChangeNotifier {
   void setSelectedCategory(ProductCategory? category) {
     _selectedCategory = category;
     notifyListeners();
+  }
+
+  /// POST /products/generate-description — generate AI description.
+  /// Returns the generated description string, or null on failure.
+  Future<String?> generateAiDescription({
+    required File photo,
+    required String namaProduk,
+  }) async {
+    if (_selectedCategory == null) {
+      _errorMessage = 'Pilih kategori produk terlebih dahulu.';
+      notifyListeners();
+      return null;
+    }
+
+    _isGeneratingAi = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final desc = await UploadProductService.generateDescription(
+        photo: photo,
+        namaProduk: namaProduk,
+        kategoriId: _selectedCategory!.id,
+      );
+      return desc;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      return null;
+    } finally {
+      _isGeneratingAi = false;
+      notifyListeners();
+    }
   }
 
   /// Submit product via POST /products multipart/form-data.

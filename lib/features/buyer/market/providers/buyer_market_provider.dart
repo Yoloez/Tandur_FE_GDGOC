@@ -26,6 +26,9 @@ class BuyerMarketProvider extends ChangeNotifier {
   bool _isLoadingCategories = false;
   bool _hasFetchedInitially = false;
 
+  // ── Sort ──
+  String? _sortOrder; // null = default, 'asc' = termurah, 'desc' = termahal
+
   // ── Getters ──
   List<ProductItem> get products => _products;
   bool get isLoading => _isLoading;
@@ -39,6 +42,7 @@ class BuyerMarketProvider extends ChangeNotifier {
   List<ProductCategory> get apiCategories => _apiCategories;
   ProductCategory? get selectedCategory => _selectedCategory;
   bool get isLoadingCategories => _isLoadingCategories;
+  String? get sortOrder => _sortOrder;
 
   Future<void>? _initFuture;
 
@@ -107,6 +111,7 @@ class BuyerMarketProvider extends ChangeNotifier {
         kategoriId: _selectedCategory?.id,
         searchQuery: _searchQuery,
         page: _currentPage,
+        sort: _sortOrder,
       );
       _products = result.products;
       _meta = result.meta;
@@ -129,6 +134,13 @@ class BuyerMarketProvider extends ChangeNotifier {
   void setSearchQuery(String? query) {
     if (_searchQuery == query) return;
     _searchQuery = query;
+    _currentPage = 1;
+    loadProducts();
+  }
+
+  void setSortOrder(String? sort) {
+    if (_sortOrder == sort) return;
+    _sortOrder = sort;
     _currentPage = 1;
     loadProducts();
   }

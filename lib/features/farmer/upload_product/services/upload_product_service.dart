@@ -28,6 +28,38 @@ class UploadProductService {
     }
   }
 
+  /// POST /products/generate-description — generate AI product description.
+  static Future<String> generateDescription({
+    required File photo,
+    required String namaProduk,
+    required String kategoriId,
+  }) async {
+    try {
+      final fileName = photo.path.split(Platform.pathSeparator).last;
+      final formData = FormData.fromMap({
+        'namaProduk': namaProduk,
+        'kategoriId': kategoriId,
+        'file': await MultipartFile.fromFile(photo.path, filename: fileName),
+      });
+
+      final response = await ApiClient.dio.post(
+        'products/generate-description',
+        data: formData,
+      );
+
+      final data = response.data;
+      if (data is Map && data['deskripsi'] != null) {
+        return data['deskripsi'].toString();
+      }
+      throw Exception('Respons AI tidak valid.');
+    } on DioException catch (e) {
+      throw Exception(_extractErrorMessage(e));
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Gagal generate deskripsi AI.');
+    }
+  }
+
   /// POST /products — create product with photos as multipart/form-data.
   static Future<void> createProduct(
     ProductCreateRequest request, {

@@ -11,7 +11,7 @@ class BuyerMarketScreen extends StatefulWidget {
   final String? initialCategoryName;
 
   const BuyerMarketScreen({
-    super.key, 
+    super.key,
     this.initialSearchQuery,
     this.initialCategoryName,
   });
@@ -42,11 +42,11 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
     super.didUpdateWidget(oldWidget);
     if (widget.initialSearchQuery != oldWidget.initialSearchQuery ||
         widget.initialCategoryName != oldWidget.initialCategoryName) {
-      
-      if (widget.initialSearchQuery != null && widget.initialSearchQuery != oldWidget.initialSearchQuery) {
+      if (widget.initialSearchQuery != null &&
+          widget.initialSearchQuery != oldWidget.initialSearchQuery) {
         _searchController.text = widget.initialSearchQuery!;
       }
-      
+
       _provider.initialize(
         initialSearchQuery: widget.initialSearchQuery,
         initialCategoryName: widget.initialCategoryName,
@@ -225,7 +225,8 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // "Semua" chip (no filter)
+                _buildSortButton(),
+                const SizedBox(width: 10),
                 _CategoryChip(
                   label: 'Semua',
                   isSelected: _provider.selectedCategory == null,
@@ -242,9 +243,128 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
                     ),
                   ),
                 ),
+                // ── Sort button ──
               ],
             ),
           );
+  }
+
+  Widget _buildSortButton() {
+    final hasSort = _provider.sortOrder != null;
+    return GestureDetector(
+      onTap: _showSortSheet,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: hasSort ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: hasSort ? AppColors.primary : AppColors.outlineVariant,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.sort_rounded,
+              size: 16,
+              color: hasSort ? AppColors.onPrimary : AppColors.onSurface,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              hasSort
+                  ? (_provider.sortOrder == 'asc' ? 'Termurah' : 'Termahal')
+                  : 'Urutkan',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: hasSort ? AppColors.onPrimary : AppColors.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSortSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Handle ──
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.outlineVariant,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Urutkan Berdasarkan Harga',
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _SortOption(
+                      label: 'Default',
+                      subtitle: 'Tanpa pengurutan khusus',
+                      isSelected: _provider.sortOrder == null,
+                      onTap: () {
+                        _provider.setSortOrder(null);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _SortOption(
+                      label: 'Termurah',
+                      subtitle: 'Harga dari terendah ke tertinggi',
+                      icon: Icons.arrow_upward_rounded,
+                      isSelected: _provider.sortOrder == 'asc',
+                      onTap: () {
+                        _provider.setSortOrder('asc');
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _SortOption(
+                      label: 'Termahal',
+                      subtitle: 'Harga dari tertinggi ke terendah',
+                      icon: Icons.arrow_downward_rounded,
+                      isSelected: _provider.sortOrder == 'desc',
+                      onTap: () {
+                        _provider.setSortOrder('desc');
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   // ────────────────────────────────────────────────
@@ -957,6 +1077,118 @@ class _MarketProductCard extends StatelessWidget {
     return Container(
       color: AppColors.surfaceContainerLow,
       child: const Icon(Icons.eco_rounded, size: 40, color: AppColors.outline),
+    );
+  }
+}
+
+// ── Sort option tile ──────────────────────────────────
+class _SortOption extends StatelessWidget {
+  final String label;
+  final String subtitle;
+  final IconData? icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _SortOption({
+    required this.label,
+    required this.subtitle,
+    this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.08)
+              : AppColors.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.outlineVariant,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            if (icon != null)
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary.withValues(alpha: 0.12)
+                      : AppColors.outlineVariant.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  size: 16,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.onSurfaceVariant,
+                ),
+              )
+            else
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary.withValues(alpha: 0.12)
+                      : AppColors.outlineVariant.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.list_rounded,
+                  size: 16,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.onSurfaceVariant,
+                ),
+              ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(
+                Icons.check_circle_rounded,
+                size: 20,
+                color: AppColors.primary,
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
