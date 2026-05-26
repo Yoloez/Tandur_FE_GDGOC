@@ -17,12 +17,11 @@ class BuyerHomeProvider extends ChangeNotifier {
   String get location => 'Jakarta Selatan';
 
   // ── Categories ──
-  List<CategoryItem> get categories => const [
-    CategoryItem(icon: Icons.eco_rounded, label: 'Sayuran'),
-    CategoryItem(icon: Icons.apple_rounded, label: 'Buah'),
-    CategoryItem(icon: Icons.grain_rounded, label: 'Beras'),
-    CategoryItem(icon: Icons.spa_rounded, label: 'Bumbu'),
-  ];
+  List<CategoryItem> _categories = [];
+  bool _isLoadingCategories = false;
+  
+  List<CategoryItem> get categories => _categories;
+  bool get isLoadingCategories => _isLoadingCategories;
 
   // ── Verified farmers (from API) ──
   List<FarmerItem> _farmers = [];
@@ -47,8 +46,23 @@ class BuyerHomeProvider extends ChangeNotifier {
     _hasFetchedInitially = true;
     
     // We don't await here to let them load in parallel and notify independently
+    loadCategories();
     loadFarmers();
     loadProducts();
+  }
+
+  /// Fetch categories
+  Future<void> loadCategories() async {
+    _isLoadingCategories = true;
+    notifyListeners();
+    try {
+      _categories = await BuyerHomeService.fetchCategories();
+    } catch (_) {
+      // Non-fatal, just keep it empty if fails
+    } finally {
+      _isLoadingCategories = false;
+      notifyListeners();
+    }
   }
 
   /// Fetch the top 4 farmers

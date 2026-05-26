@@ -81,8 +81,10 @@ class _BuyerHomeScreenState extends State<BuyerHomeScreen> {
                         // ── Categories ──
                         Padding(
                           padding: const EdgeInsets.only(left: 20),
-                          child:
-                              CategorySection(categories: _provider.categories),
+                          child: CategorySection(
+                            categories: _provider.categories,
+                            isLoading: _provider.isLoadingCategories,
+                          ),
                         ),
 
                         const SizedBox(height: 24),

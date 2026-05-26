@@ -2,10 +2,27 @@ import 'package:flutter/material.dart';
 
 /// A category item (Sayuran, Buah, Beras, Bumbu).
 class CategoryItem {
-  final IconData icon;
+  final String id;
   final String label;
 
-  const CategoryItem({required this.icon, required this.label});
+  const CategoryItem({required this.id, required this.label});
+
+  IconData get icon {
+    final lower = label.toLowerCase();
+    if (lower.contains('sayur')) return Icons.eco_rounded;
+    if (lower.contains('buah')) return Icons.apple_rounded;
+    if (lower.contains('beras') || lower.contains('biji')) return Icons.grain_rounded;
+    if (lower.contains('bumbu') || lower.contains('rempah')) return Icons.spa_rounded;
+    if (lower.contains('daging')) return Icons.set_meal_rounded;
+    return Icons.category_rounded;
+  }
+
+  factory CategoryItem.fromJson(Map<String, dynamic> json) {
+    return CategoryItem(
+      id: json['id']?.toString() ?? '',
+      label: json['nama']?.toString() ?? 'Kategori',
+    );
+  }
 }
 
 /// A verified farmer card.

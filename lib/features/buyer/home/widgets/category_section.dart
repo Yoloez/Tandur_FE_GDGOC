@@ -6,8 +6,13 @@ import '../models/buyer_home_data.dart';
 /// Horizontal scrollable category chips section.
 class CategorySection extends StatelessWidget {
   final List<CategoryItem> categories;
+  final bool isLoading;
 
-  const CategorySection({super.key, required this.categories});
+  const CategorySection({
+    super.key, 
+    required this.categories,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,18 +31,52 @@ class CategorySection extends StatelessWidget {
         const SizedBox(height: 14),
         SizedBox(
           height: 85,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemCount: categories.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 20),
-            itemBuilder: (context, index) {
-              final cat = categories[index];
-              return _CategoryChip(item: cat);
-            },
-          ),
+          child: isLoading 
+            ? _buildSkeleton()
+            : ListView.separated(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: categories.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 20),
+                itemBuilder: (context, index) {
+                  final cat = categories[index];
+                  return _CategoryChip(item: cat);
+                },
+              ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSkeleton() {
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 4,
+      separatorBuilder: (context, index) => const SizedBox(width: 20),
+      itemBuilder: (context, index) {
+        return Column(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Container(
+              width: 40,
+              height: 12,
+              decoration: BoxDecoration(
+                color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -33,4 +33,26 @@ class BuyerHomeService {
       throw Exception('Gagal memuat daftar petani.');
     }
   }
+
+  static Future<List<CategoryItem>> fetchCategories() async {
+    try {
+      final response = await ApiClient.dio.get('/categories');
+      final data = response.data;
+      if (data is List) {
+        return data
+            .whereType<Map<String, dynamic>>()
+            .map((e) => CategoryItem.fromJson(e))
+            .toList();
+      }
+      return [];
+    } on DioException catch (e) {
+      if (e.response?.data is Map) {
+        final data = e.response!.data as Map;
+        throw Exception(data['message']?.toString() ?? 'Gagal memuat kategori.');
+      }
+      throw Exception('Tidak dapat terhubung ke server.');
+    } catch (_) {
+      throw Exception('Gagal memuat kategori.');
+    }
+  }
 }
