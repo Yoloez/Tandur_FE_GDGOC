@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import 'package:tandur/core/routing/app_router.dart';
 import 'package:tandur/core/constants/color.dart';
 import '../models/buyer_home_data.dart';
 
@@ -89,7 +91,12 @@ class _CategoryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        context.goNamed(
+          AppRoutes.buyerMarket,
+          queryParameters: {'category': item.label},
+        );
+      },
       child: Column(
         children: [
           Container(

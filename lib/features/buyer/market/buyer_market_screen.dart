@@ -8,8 +8,13 @@ import 'providers/buyer_market_provider.dart';
 
 class BuyerMarketScreen extends StatefulWidget {
   final String? initialSearchQuery;
+  final String? initialCategoryName;
 
-  const BuyerMarketScreen({super.key, this.initialSearchQuery});
+  const BuyerMarketScreen({
+    super.key, 
+    this.initialSearchQuery,
+    this.initialCategoryName,
+  });
 
   @override
   State<BuyerMarketScreen> createState() => _BuyerMarketScreenState();
@@ -26,16 +31,26 @@ class _BuyerMarketScreenState extends State<BuyerMarketScreen> {
     if (widget.initialSearchQuery != null) {
       _searchController.text = widget.initialSearchQuery!;
     }
-    _provider.initialize(initialSearchQuery: widget.initialSearchQuery);
+    _provider.initialize(
+      initialSearchQuery: widget.initialSearchQuery,
+      initialCategoryName: widget.initialCategoryName,
+    );
   }
 
   @override
   void didUpdateWidget(covariant BuyerMarketScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.initialSearchQuery != oldWidget.initialSearchQuery &&
-        widget.initialSearchQuery != null) {
-      _searchController.text = widget.initialSearchQuery!;
-      _provider.setSearchQuery(widget.initialSearchQuery!);
+    if (widget.initialSearchQuery != oldWidget.initialSearchQuery ||
+        widget.initialCategoryName != oldWidget.initialCategoryName) {
+      
+      if (widget.initialSearchQuery != null && widget.initialSearchQuery != oldWidget.initialSearchQuery) {
+        _searchController.text = widget.initialSearchQuery!;
+      }
+      
+      _provider.initialize(
+        initialSearchQuery: widget.initialSearchQuery,
+        initialCategoryName: widget.initialCategoryName,
+      );
     }
   }
 

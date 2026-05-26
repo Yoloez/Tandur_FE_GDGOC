@@ -40,14 +40,41 @@ class BuyerMarketProvider extends ChangeNotifier {
   ProductCategory? get selectedCategory => _selectedCategory;
   bool get isLoadingCategories => _isLoadingCategories;
 
+  Future<void>? _initFuture;
+
   Future<void> _init() async {
-    await _loadCategories();
+    _initFuture = _loadCategories();
+    await _initFuture;
   }
   
-  Future<void> initialize({String? initialSearchQuery}) async {
+  Future<void> initialize({
+    String? initialSearchQuery,
+    String? initialCategoryName,
+  }) async {
+    if (_initFuture != null) {
+      await _initFuture;
+    }
+
+    bool shouldRefetch = false;
+
     if (initialSearchQuery != null && initialSearchQuery != _searchQuery) {
       _searchQuery = initialSearchQuery;
-      _hasFetchedInitially = false; // Force refetch if search query changed from external
+      shouldRefetch = true;
+    }
+
+    if (initialCategoryName != null) {
+      final category = _apiCategories
+          .where((c) => c.nama.toLowerCase() == initialCategoryName.toLowerCase())
+          .firstOrNull;
+      
+      if (category != null && _selectedCategory?.id != category.id) {
+        _selectedCategory = category;
+        shouldRefetch = true;
+      }
+    }
+    
+    if (shouldRefetch) {
+      _hasFetchedInitially = false; // Force refetch if search query or category changed from external
     }
     
     if (_hasFetchedInitially) return;

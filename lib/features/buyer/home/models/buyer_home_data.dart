@@ -9,12 +9,16 @@ class CategoryItem {
 
   IconData get icon {
     final lower = label.toLowerCase();
-    if (lower.contains('sayur')) return Icons.eco_rounded;
-    if (lower.contains('buah')) return Icons.apple_rounded;
-    if (lower.contains('beras') || lower.contains('biji')) return Icons.grain_rounded;
-    if (lower.contains('bumbu') || lower.contains('rempah')) return Icons.spa_rounded;
-    if (lower.contains('daging')) return Icons.set_meal_rounded;
-    return Icons.category_rounded;
+    if (lower.contains('sayur')) return Icons.energy_savings_leaf_rounded;
+    if (lower.contains('buah')) return Icons.apple_sharp;
+    if (lower.contains('benih') || lower.contains('biji'))
+      return Icons.yard_rounded;
+    if (lower.contains('bumbu') || lower.contains('rempah'))
+      return Icons.whatshot_rounded;
+    if (lower.contains('olahan')) return Icons.lunch_dining_rounded;
+    if (lower.contains('peralatan') || lower.contains('alat'))
+      return Icons.handyman_rounded;
+    return Icons.storefront_rounded;
   }
 
   factory CategoryItem.fromJson(Map<String, dynamic> json) {
@@ -44,12 +48,12 @@ class FarmerItem {
   factory FarmerItem.fromJson(Map<String, dynamic> json) {
     final profile = json['profile'] as Map<String, dynamic>? ?? {};
     final loc = json['location'] as Map<String, dynamic>? ?? {};
-    
+
     return FarmerItem(
       id: json['id'] ?? '',
       name: profile['namaLengkap'] ?? 'Petani Tanpa Nama',
-      location: loc['formattedAddress']?.toString().isNotEmpty == true 
-          ? loc['formattedAddress'] 
+      location: loc['formattedAddress']?.toString().isNotEmpty == true
+          ? loc['formattedAddress']
           : 'Lokasi tidak diketahui',
       rating: 5.0, // Hardcoded since API doesn't provide rating
       avatarUrl: profile['fotoProfil'],

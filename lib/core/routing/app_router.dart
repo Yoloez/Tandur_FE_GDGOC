@@ -322,7 +322,11 @@ class AppRouter {
                 path: '/buyer/market',
                 builder: (context, state) {
                   final query = state.uri.queryParameters['q'];
-                  return BuyerMarketScreen(initialSearchQuery: query);
+                  final category = state.uri.queryParameters['category'];
+                  return BuyerMarketScreen(
+                    initialSearchQuery: query,
+                    initialCategoryName: category,
+                  );
                 },
               ),
             ],
