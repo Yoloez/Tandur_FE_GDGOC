@@ -10,15 +10,7 @@ class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key, required this.navigationShell});
 
   void _onTap(BuildContext context, int index) {
-    if (index == 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Fitur belum tersedia.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
+    // Allow all indexes to navigate
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
@@ -30,7 +22,7 @@ class AppBottomNav extends StatelessWidget {
     final items = [
       {'icon': Icons.home_rounded, 'label': 'Beranda'},
       {'icon': Icons.grass_rounded, 'label': 'Pasar'},
-      {'icon': Icons.bar_chart_rounded, 'label': 'Pantau'},
+      {'icon': Icons.history, 'label': 'Pesanan'},
       {'icon': Icons.person_outline_rounded, 'label': 'Profil'},
     ];
 
