@@ -107,6 +107,7 @@ class UserModel {
   final double? latitude;
   final double? longitude;
   final String? formattedAddress;
+  final String? saldo;
 
   const UserModel({
     required this.id,
@@ -119,6 +120,7 @@ class UserModel {
     this.latitude,
     this.longitude,
     this.formattedAddress,
+    this.saldo,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -136,6 +138,20 @@ class UserModel {
       latitude: location['latitude'] != null ? double.tryParse(location['latitude'].toString()) : null,
       longitude: location['longitude'] != null ? double.tryParse(location['longitude'].toString()) : null,
       formattedAddress: location['formattedAddress'],
+      saldo: profile['saldo']?.toString(),
     );
+  }
+
+  String get saldoFormatted {
+    if (saldo == null || saldo!.isEmpty) return 'Rp 0';
+    final s = saldo!.split('.').first;
+    final buf = StringBuffer();
+    int count = 0;
+    for (int i = s.length - 1; i >= 0; i--) {
+      if (count > 0 && count % 3 == 0) buf.write('.');
+      buf.write(s[i]);
+      count++;
+    }
+    return 'Rp ${buf.toString().split('').reversed.join()}';
   }
 }
