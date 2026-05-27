@@ -42,10 +42,16 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
                 : 'Petani';
             final avatarUrl = AuthProvider.instance.avatarUrl;
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            return RefreshIndicator(
+              onRefresh: () async {
+                await AuthProvider.instance.fetchCurrentUser();
+              },
+              color: AppColors.primary,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── App bar ──
                   FarmerAppBar(
@@ -116,6 +122,7 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
                     child: InsightCard(data: _provider.insight),
                   ),
                 ],
+              ),
               ),
             );
           },

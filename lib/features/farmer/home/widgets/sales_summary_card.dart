@@ -3,6 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:tandur/core/constants/color.dart';
 import '../models/farmer_home_data.dart';
 
+import 'package:provider/provider.dart';
+import 'package:tandur/features/auth/providers/auth_provider.dart';
+
 class SalesSummaryCard extends StatelessWidget {
   final SalesSummary data;
 
@@ -10,6 +13,9 @@ class SalesSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().currentUser;
+    final totalPenjualan = user?.saldoFormatted ?? 'Rp 0';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -45,7 +51,7 @@ class SalesSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            data.totalFormatted,
+            totalPenjualan,
             style: GoogleFonts.beVietnamPro(
               fontSize: 28,
               fontWeight: FontWeight.w700,
