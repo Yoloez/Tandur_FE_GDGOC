@@ -85,7 +85,10 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
     if (!mounted) return;
 
     if (file != null) {
-      setState(() => _selectedImages.add(file));
+      setState(() {
+        _selectedImages.clear();
+        _selectedImages.add(file);
+      });
     }
   }
 
@@ -447,7 +450,7 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Maksimal 5 foto • JPG, PNG',
+                        'Maksimal 1 foto • JPG, PNG',
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
@@ -476,7 +479,7 @@ class _UploadProductScreenState extends State<UploadProductScreen> {
                             ),
                           ),
                           child: Text(
-                            '${_selectedImages.length} foto dipilih • Ketuk untuk tambah',
+                            'Foto dipilih • Ketuk untuk ganti',
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
