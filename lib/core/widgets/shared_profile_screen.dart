@@ -32,11 +32,8 @@ class _SharedProfileScreenState extends State<SharedProfileScreen> {
     showDialog<void>(
       context: context,
       barrierDismissible: true,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 32),
-        child: _LogoutDialog(onConfirm: _onLogoutConfirmed),
-      ),
+      barrierColor: Colors.black54,
+      builder: (ctx) => _LogoutDialog(onConfirm: _onLogoutConfirmed),
     );
   }
 
@@ -490,10 +487,10 @@ class _LogoutButton extends StatelessWidget {
       child: ElevatedButton.icon(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppColors.surfaceContainer,
           foregroundColor: Colors.white,
-          elevation: 0,
-          side: const BorderSide(color: AppColors.error, width: 1),
+          // elevation: 0,
+          side: const BorderSide(color: AppColors.surfaceVariant, width: 1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -501,12 +498,12 @@ class _LogoutButton extends StatelessWidget {
         icon: const Icon(
           Icons.logout_rounded,
           size: 20,
-          color: AppColors.error,
+          color: AppColors.onBackground,
         ),
         label: Text(
           'Keluar',
           style: GoogleFonts.beVietnamPro(
-            color: AppColors.error,
+            color: AppColors.onBackground,
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -566,6 +563,7 @@ class _LogoutDialogState extends State<_LogoutDialog>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scale;
+  late Animation<double> _fade;
   bool _loading = false;
 
   @override
@@ -573,9 +571,10 @@ class _LogoutDialogState extends State<_LogoutDialog>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 280),
+      duration: const Duration(milliseconds: 320),
     );
     _scale = CurvedAnimation(parent: _controller, curve: Curves.easeOutBack);
+    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
   }
 
@@ -592,107 +591,193 @@ class _LogoutDialogState extends State<_LogoutDialog>
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scale,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
-        ),
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: AppColors.errorContainer,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.logout_rounded,
-                color: AppColors.error,
-                size: 32,
-              ),
+    return FadeTransition(
+      opacity: _fade,
+      child: ScaleTransition(
+        scale: _scale,
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 40,
+                  offset: const Offset(0, 12),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            Text(
-              'Keluar dari Akun?',
-              style: GoogleFonts.beVietnamPro(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF1A1A1A),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Kamu akan keluar dari sesi ini.\nPastikan semua data telah tersimpan.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: Colors.grey[500],
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 32),
-            Column(
-              // crossAxisAlignment memastikan kedua tombol memiliki lebar penuh yang sama
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                ElevatedButton(
-                  onPressed: _loading ? null : _handleConfirm,
-                  style: ElevatedButton.styleFrom(
-                    // backgroundColor: const Color(0xFFE53935),
-                    backgroundColor: AppColors.error,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                // ── Illustration + close button ──
+                Stack(
+                  children: [
+                    // Illustration
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        height: 170,
+                        color: Colors.transparent,
+                        child: Image.asset(
+                          'assets/images/logout-illustration.webp',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: _loading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+                    // Close button
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: GestureDetector(
+                        onTap: _loading
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            shape: BoxShape.circle,
                           ),
-                        )
-                      : Text(
-                          'Ya, Keluar',
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
+                          child: const Icon(
+                            Icons.close_rounded,
+                            size: 18,
+                            color: Color(0xFF333333),
                           ),
                         ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12), // Jarak vertikal antar tombol
-                OutlinedButton(
-                  onPressed: _loading
-                      ? null
-                      : () => Navigator.of(context).pop(),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF1A1A1A),
-                    side: BorderSide(color: Colors.grey[300]!),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(
-                    'Batal',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                    ),
+
+                // ── Content ──
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 15, 24, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Title
+                      Text(
+                        'Apakah kamu ingin keluar?',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.beVietnamPro(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                          letterSpacing: -0.3,
+                          height: 1.25,
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Subtitle
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          style: GoogleFonts.inter(
+                            fontSize: 13.5,
+                            color: const Color(0xFF777777),
+                            height: 1.55,
+                          ),
+                          children: const [
+                            TextSpan(
+                              text:
+                                  'Kamu bisa masuk kembali kapan saja. Data dan riwayat pesananmu tetap tersimpan dengan aman.',
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // ── Buttons ──
+                      Row(
+                        children: [
+                          // Cancel
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _loading
+                                  ? null
+                                  : () => Navigator.of(context).pop(),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF333333),
+                                side: BorderSide(
+                                  color: const Color(
+                                    0xFF333333,
+                                  ).withValues(alpha: 0.2),
+                                  width: 1.2,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                ),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                'Batal',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14.5,
+                                  color: const Color(0xFF333333),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          // Log out
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _loading ? null : _handleConfirm,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                ),
+                              ),
+                              child: _loading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Keluar',
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14.5,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
