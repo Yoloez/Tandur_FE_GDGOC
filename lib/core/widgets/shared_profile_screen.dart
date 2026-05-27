@@ -140,8 +140,8 @@ class _SharedProfileScreenState extends State<SharedProfileScreen> {
                     if (isPetani) ...[
                       const SizedBox(height: 12),
                       _PetaniStatsCard(
-                        totalProduk: '12', // Placeholder
-                        rating: '4.8', // Placeholder
+                        totalProduk: '8', // Placeholder
+                        rating: '5.0', // Placeholder
                       ),
                     ],
 
