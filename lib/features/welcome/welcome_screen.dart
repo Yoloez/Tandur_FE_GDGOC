@@ -355,8 +355,6 @@ class _ActionButtons extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: 8),
-                const Icon(Icons.arrow_forward_rounded, size: 20),
               ],
             ),
           ),

@@ -20,6 +20,9 @@ class _LoginSheetState extends State<LoginSheet> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
+  String? _emailError;
+  String? _passwordError;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -30,21 +33,15 @@ class _LoginSheetState extends State<LoginSheet> {
   }
 
   Future<void> _onLogin() async {
-    final email = _emailController.text;
+    final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Email dan password wajib diisi.'),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
-      return;
-    }
+    // Inline validation
+    setState(() {
+      _emailError = email.isEmpty ? 'Email wajib diisi' : null;
+      _passwordError = password.isEmpty ? 'Password wajib diisi' : null;
+    });
+    if (_emailError != null || _passwordError != null) return;
 
     // Unfocus keyboard
     FocusScope.of(context).unfocus();
@@ -175,6 +172,8 @@ class _LoginSheetState extends State<LoginSheet> {
                         hint: 'nama@email.com',
                         icon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
+                        errorText: _emailError,
+                        onChanged: (_) => setState(() => _emailError = null),
                       ),
 
                       const SizedBox(height: 20),
@@ -203,6 +202,8 @@ class _LoginSheetState extends State<LoginSheet> {
                         hint: '••••••••',
                         icon: Icons.lock_outline_rounded,
                         obscureText: _obscurePassword,
+                        errorText: _passwordError,
+                        onChanged: (_) => setState(() => _passwordError = null),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -406,44 +407,87 @@ class _LoginSheetState extends State<LoginSheet> {
     bool obscureText = false,
     Widget? suffixIcon,
     TextInputType keyboardType = TextInputType.text,
+    String? errorText,
+    void Function(String)? onChanged,
   }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      style: GoogleFonts.inter(
-        fontSize: 15,
-        fontWeight: FontWeight.w400,
-        color: AppColors.onSurface,
-      ),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: GoogleFonts.inter(
-          fontSize: 15,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textHint,
+    final hasError = errorText != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: keyboardType,
+          onChanged: onChanged,
+          style: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: AppColors.onSurface,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textHint,
+            ),
+            prefixIcon: Icon(
+              icon,
+              color: hasError ? AppColors.error : AppColors.outline,
+              size: 20,
+            ),
+            suffixIcon: suffixIcon,
+            filled: true,
+            fillColor: hasError
+                ? AppColors.errorContainer.withValues(alpha: 0.4)
+                : AppColors.surface,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppColors.outlineVariant),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(
+                color: hasError ? AppColors.error : AppColors.outlineVariant,
+                width: hasError ? 1.5 : 1.0,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(
+                color: hasError ? AppColors.error : AppColors.primary,
+                width: 1.5,
+              ),
+            ),
+          ),
         ),
-        prefixIcon: Icon(icon, color: AppColors.outline, size: 20),
-        suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.outlineVariant),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.outlineVariant),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-      ),
+        if (hasError) ...
+          [
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(
+                  Icons.error_outline_rounded,
+                  size: 14,
+                  color: AppColors.error,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  errorText,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.error,
+                  ),
+                ),
+              ],
+            ),
+          ],
+      ],
     );
   }
 }
