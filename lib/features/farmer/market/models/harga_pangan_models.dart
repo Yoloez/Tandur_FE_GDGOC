@@ -1,34 +1,19 @@
-/// Province item from GET /hargapangan/provinces
-class Province {
+/// Market item from GET /hargapangan/markets
+class Market {
   final int id;
-  final String name;
+  final String nama;
 
-  const Province({required this.id, required this.name});
+  const Market({required this.id, required this.nama});
 
-  factory Province.fromJson(Map<String, dynamic> json) {
-    return Province(
-      id: json['province_id'] as int? ?? 0,
-      name: json['province_name']?.toString() ?? '',
+  factory Market.fromJson(Map<String, dynamic> json) {
+    return Market(
+      id: json['id'] as int? ?? 0,
+      nama: json['nama']?.toString() ?? '',
     );
   }
 }
 
-/// Market type item from GET /hargapangan/market-types
-class MarketType {
-  final int id;
-  final String name;
-
-  const MarketType({required this.id, required this.name});
-
-  factory MarketType.fromJson(Map<String, dynamic> json) {
-    return MarketType(
-      id: json['price_type_id'] as int? ?? 0,
-      name: json['price_type_name']?.toString() ?? '',
-    );
-  }
-}
-
-/// Single commodity price from POST /hargapangan/prices
+/// Single commodity price from GET /hargapangan/prices?pasarId=X
 class CommodityPrice {
   final String commodity;
   final int nominal;
@@ -36,6 +21,8 @@ class CommodityPrice {
   final double changePercentage;
   final String denomination;
   final String? date;
+  final String? market;
+  final String? trend;
 
   const CommodityPrice({
     required this.commodity,
@@ -44,6 +31,8 @@ class CommodityPrice {
     required this.changePercentage,
     required this.denomination,
     this.date,
+    this.market,
+    this.trend,
   });
 
   factory CommodityPrice.fromJson(Map<String, dynamic> json) {
@@ -55,20 +44,20 @@ class CommodityPrice {
           (json['changePercentage'] as num?)?.toDouble() ?? 0.0,
       denomination: json['denomination']?.toString() ?? '',
       date: json['date']?.toString(),
+      market: json['market']?.toString(),
+      trend: json['trend']?.toString(),
     );
   }
 }
 
-/// Full price response from POST /hargapangan/prices
+/// Full price response from GET /hargapangan/prices?pasarId=X
 class PriceResponse {
-  final int provinceId;
-  final int marketTypeId;
+  final String? source;
   final String? updatedAt;
   final List<CommodityPrice> prices;
 
   const PriceResponse({
-    required this.provinceId,
-    required this.marketTypeId,
+    this.source,
     this.updatedAt,
     required this.prices,
   });
@@ -76,8 +65,7 @@ class PriceResponse {
   factory PriceResponse.fromJson(Map<String, dynamic> json) {
     final pricesRaw = json['prices'] as List? ?? [];
     return PriceResponse(
-      provinceId: json['provinceId'] as int? ?? 0,
-      marketTypeId: json['marketTypeId'] as int? ?? 0,
+      source: json['source']?.toString(),
       updatedAt: json['updatedAt']?.toString(),
       prices: pricesRaw
           .whereType<Map<String, dynamic>>()

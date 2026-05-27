@@ -151,8 +151,6 @@ class _FarmerMarketScreenState extends State<FarmerMarketScreen> {
         child: Column(
           children: [
             _buildSkeletonDropdown(),
-            const SizedBox(height: 12),
-            _buildSkeletonDropdown(),
           ],
         ),
       );
@@ -172,24 +170,14 @@ class _FarmerMarketScreenState extends State<FarmerMarketScreen> {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       child: Column(
         children: [
-          // Province dropdown
-          _buildDropdown<Province>(
-            icon: Icons.location_on_outlined,
-            label: 'Provinsi',
-            value: _provider.selectedProvince,
-            items: _provider.provinces,
-            itemLabel: (p) => p.name,
-            onChanged: _provider.setProvince,
-          ),
-          const SizedBox(height: 12),
-          // Market type dropdown
-          _buildDropdown<MarketType>(
+          // Market dropdown
+          _buildDropdown<Market>(
             icon: Icons.storefront_outlined,
-            label: 'Tipe Pasar',
-            value: _provider.selectedMarketType,
-            items: _provider.marketTypes,
-            itemLabel: (m) => m.name,
-            onChanged: _provider.setMarketType,
+            label: 'Pilih Pasar',
+            value: _provider.selectedMarket,
+            items: _provider.markets,
+            itemLabel: (m) => m.nama,
+            onChanged: _provider.setMarket,
           ),
         ],
       ),
@@ -268,25 +256,51 @@ class _FarmerMarketScreenState extends State<FarmerMarketScreen> {
   Widget _buildUpdatedAt() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: const BoxDecoration(
-              color: AppColors.success,
-              shape: BoxShape.circle,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: AppColors.success,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Diperbarui: ${_formatDate(_provider.priceResponse?.updatedAt)}',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textHint,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Text(
-            'Diperbarui: ${_formatDate(_provider.priceResponse?.updatedAt)}',
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textHint,
+          if (_provider.priceResponse?.source != null) ...[
+            const SizedBox(height: 4),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    'Sumber: ${_provider.priceResponse!.source}',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.outline,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
+          ],
         ],
       ),
     );

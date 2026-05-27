@@ -6,55 +6,34 @@ import '../models/harga_pangan_models.dart';
 class HargaPanganService {
   const HargaPanganService._();
 
-  /// GET /hargapangan/provinces
-  static Future<List<Province>> fetchProvinces() async {
+  /// GET /hargapangan/markets
+  static Future<List<Market>> fetchMarkets() async {
     try {
-      final response = await ApiClient.dio.get('hargapangan/provinces');
+      final response = await ApiClient.dio.get('hargapangan/markets');
       final data = response.data;
-      if (data is Map && data['data'] is List) {
-        return (data['data'] as List)
+      if (data is List) {
+        return data
             .whereType<Map<String, dynamic>>()
-            .map((e) => Province.fromJson(e))
+            .map((e) => Market.fromJson(e))
             .toList();
       }
       return [];
     } on DioException catch (e) {
       throw Exception(_extractError(e));
     } catch (_) {
-      throw Exception('Gagal memuat data provinsi.');
-    }
-  }
-
-  /// GET /hargapangan/market-types
-  static Future<List<MarketType>> fetchMarketTypes() async {
-    try {
-      final response = await ApiClient.dio.get('hargapangan/market-types');
-      final data = response.data;
-      if (data is Map && data['data'] is List) {
-        return (data['data'] as List)
-            .whereType<Map<String, dynamic>>()
-            .map((e) => MarketType.fromJson(e))
-            .toList();
-      }
-      return [];
-    } on DioException catch (e) {
-      throw Exception(_extractError(e));
-    } catch (_) {
-      throw Exception('Gagal memuat tipe pasar.');
+      throw Exception('Gagal memuat data pasar.');
     }
   }
 
   /// GET /hargapangan/prices
   static Future<PriceResponse> fetchPrices({
-    required int provinceId,
-    required int marketTypeId,
+    required int pasarId,
   }) async {
     try {
       final response = await ApiClient.dio.get(
         'hargapangan/prices',
         queryParameters: {
-          'provinceId': provinceId,
-          'marketTypeId': marketTypeId,
+          'pasarId': pasarId,
         },
       );
       final data = response.data;
