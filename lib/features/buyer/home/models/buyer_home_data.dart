@@ -7,18 +7,21 @@ class CategoryItem {
 
   const CategoryItem({required this.id, required this.label});
 
-  IconData get icon {
+  String get icon {
     final lower = label.toLowerCase();
-    if (lower.contains('sayur')) return Icons.energy_savings_leaf_rounded;
-    if (lower.contains('buah')) return Icons.apple_sharp;
+    if (lower.contains('sayur'))
+      return 'assets/images/category/sayur-category.webp';
+    if (lower.contains('buah'))
+      return 'assets/images/category/buah-category.webp';
     if (lower.contains('benih') || lower.contains('biji'))
-      return Icons.yard_rounded;
+      return 'assets/images/category/benih-category.png';
     if (lower.contains('bumbu') || lower.contains('rempah'))
-      return Icons.whatshot_rounded;
-    if (lower.contains('olahan')) return Icons.lunch_dining_rounded;
+      return 'assets/images/category/bumubDapur-category.webp';
+    if (lower.contains('olahan'))
+      return 'assets/images/category/olahan-category.webp';
     if (lower.contains('peralatan') || lower.contains('alat'))
-      return Icons.handyman_rounded;
-    return Icons.storefront_rounded;
+      return 'assets/images/category/alat-category.webp';
+    return 'assets/images/category/default.png';
   }
 
   factory CategoryItem.fromJson(Map<String, dynamic> json) {

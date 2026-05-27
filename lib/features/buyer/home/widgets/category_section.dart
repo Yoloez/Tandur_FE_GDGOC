@@ -102,6 +102,7 @@ class _CategoryChip extends StatelessWidget {
           Container(
             width: 56,
             height: 56,
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: AppColors.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(16),
@@ -109,7 +110,10 @@ class _CategoryChip extends StatelessWidget {
                 color: AppColors.outlineVariant.withValues(alpha: 0.5),
               ),
             ),
-            child: Icon(item.icon, size: 26, color: AppColors.primary),
+            child: Image.asset(
+              item.icon,
+              fit: BoxFit.contain,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
