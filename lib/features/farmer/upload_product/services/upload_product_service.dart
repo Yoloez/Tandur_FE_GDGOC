@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:tandur/core/network/api_client.dart';
+import 'package:tandur/features/farmer/upload_product/models/price_analysis_result.dart';
 import 'package:tandur/features/farmer/upload_product/models/product_category.dart';
 import 'package:tandur/features/farmer/upload_product/models/product_create_request.dart';
 
@@ -57,6 +58,58 @@ class UploadProductService {
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Gagal generate deskripsi AI.');
+    }
+  }
+
+  /// POST /products/analyze-price — analyze product image for AI price suggestion.
+  static Future<PriceAnalysisResult> analyzePrice({
+    required List<File> images,
+    String? productName,
+    String? category,
+    String? location,
+    String? additionalContext,
+  }) async {
+    try {
+      final formData = FormData();
+
+      for (final img in images) {
+        final fileName = img.path.split(Platform.pathSeparator).last;
+        formData.files.add(
+          MapEntry(
+            'images',
+            await MultipartFile.fromFile(img.path, filename: fileName),
+          ),
+        );
+      }
+
+      if (productName != null && productName.isNotEmpty) {
+        formData.fields.add(MapEntry('productName', productName));
+      }
+      if (category != null && category.isNotEmpty) {
+        formData.fields.add(MapEntry('category', category));
+      }
+      if (location != null && location.isNotEmpty) {
+        formData.fields.add(MapEntry('location', location));
+      }
+      if (additionalContext != null && additionalContext.isNotEmpty) {
+        formData.fields.add(MapEntry('additionalContext', additionalContext));
+      }
+
+      final response = await ApiClient.dio.post(
+        'products/analyze-price',
+        data: formData,
+      );
+
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return PriceAnalysisResult.fromJson(data);
+      }
+      throw Exception('Format respons tidak valid.');
+    } on DioException catch (e) {
+      throw Exception(_extractErrorMessage(e));
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Gagal menganalisis harga AI.');
     }
   }
 

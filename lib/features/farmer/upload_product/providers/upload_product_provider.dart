@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:tandur/features/farmer/upload_product/models/price_analysis_result.dart';
 import 'package:tandur/features/farmer/upload_product/models/product_category.dart';
 import 'package:tandur/features/farmer/upload_product/models/product_create_request.dart';
 import 'package:tandur/features/farmer/upload_product/services/upload_product_service.dart';
@@ -20,6 +21,7 @@ class UploadProductProvider extends ChangeNotifier {
   bool _isSubmitting = false;
   bool _isLoadingCategories = false;
   bool _isGeneratingAi = false;
+  bool _isAnalyzingPrice = false;
   String? _errorMessage;
   List<ProductCategory> _categories = [];
   ProductCategory? _selectedCategory;
@@ -27,6 +29,7 @@ class UploadProductProvider extends ChangeNotifier {
   bool get isSubmitting => _isSubmitting;
   bool get isLoadingCategories => _isLoadingCategories;
   bool get isGeneratingAi => _isGeneratingAi;
+  bool get isAnalyzingPrice => _isAnalyzingPrice;
   String? get errorMessage => _errorMessage;
   List<ProductCategory> get categories => _categories;
   ProductCategory? get selectedCategory => _selectedCategory;
@@ -52,6 +55,40 @@ class UploadProductProvider extends ChangeNotifier {
   void setSelectedCategory(ProductCategory? category) {
     _selectedCategory = category;
     notifyListeners();
+  }
+
+  /// POST /products/analyze-price — AI price analysis.
+  /// Returns [PriceAnalysisResult] or null on failure.
+  Future<PriceAnalysisResult?> analyzePrice({
+    required List<File> images,
+    String? productName,
+    String? additionalContext,
+  }) async {
+    if (images.isEmpty) {
+      _errorMessage = 'Upload foto produk terlebih dahulu.';
+      notifyListeners();
+      return null;
+    }
+
+    _isAnalyzingPrice = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result = await UploadProductService.analyzePrice(
+        images: images,
+        productName: productName,
+        category: _selectedCategory?.nama,
+        additionalContext: additionalContext,
+      );
+      return result;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      return null;
+    } finally {
+      _isAnalyzingPrice = false;
+      notifyListeners();
+    }
   }
 
   /// POST /products/generate-description — generate AI description.
