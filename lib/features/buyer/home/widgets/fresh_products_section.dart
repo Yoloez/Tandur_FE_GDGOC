@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tandur/core/constants/color.dart';
+import 'package:tandur/core/widgets/skeleton_box.dart';
 import '../models/buyer_home_data.dart';
 
 /// 2-column product grid with image, badge, farm name, product name, price, cart button.
@@ -59,12 +60,7 @@ class FreshProductsSection extends StatelessWidget {
 
         // ── Loading ──
         if (isLoading)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 40),
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            ),
-          )
+          const _FreshProductsSkeleton()
         // ── Error ──
         else if (errorMessage != null)
           _ErrorView(message: errorMessage!, onRetry: onRetry)
@@ -363,5 +359,93 @@ class _ProductCard extends StatelessWidget {
       default:
         return AppColors.outline;
     }
+  }
+}
+
+class _FreshProductsSkeleton extends StatelessWidget {
+  const _FreshProductsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        childAspectRatio: 0.62,
+      ),
+      itemCount: 4,
+      itemBuilder: (context, index) => Container(
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.outlineVariant.withValues(alpha: 0.4),
+          ),
+        ),
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 5,
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                child: SkeletonBox(
+                  width: double.infinity,
+                  height: double.infinity,
+                  radius: 0,
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 4,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(12, 12, 12, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonBox(
+                      width: 60,
+                      height: 10,
+                      radius: 3,
+                    ),
+                    SizedBox(height: 6),
+                    SkeletonBox(
+                      width: 120,
+                      height: 14,
+                      radius: 4,
+                    ),
+                    SizedBox(height: 4),
+                    SkeletonBox(
+                      width: 90,
+                      height: 14,
+                      radius: 4,
+                    ),
+                    Spacer(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SkeletonBox(
+                          width: 70,
+                          height: 16,
+                          radius: 4,
+                        ),
+                        SkeletonBox(
+                          width: 30,
+                          height: 30,
+                          radius: 8,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

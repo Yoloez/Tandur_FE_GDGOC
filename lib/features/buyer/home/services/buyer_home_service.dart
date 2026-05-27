@@ -5,14 +5,14 @@ import '../models/buyer_home_data.dart';
 class BuyerHomeService {
   const BuyerHomeService._();
 
-  static Future<List<FarmerItem>> fetchFarmers({int page = 1, int limit = 4}) async {
+  static Future<List<FarmerItem>> fetchFarmers({
+    int page = 3,
+    int limit = 4,
+  }) async {
     try {
       final response = await ApiClient.dio.get(
         '/users/petani',
-        queryParameters: {
-          'page': page,
-          'limit': limit,
-        },
+        queryParameters: {'page': page, 'limit': limit},
       );
 
       final data = response.data;
@@ -26,7 +26,9 @@ class BuyerHomeService {
     } on DioException catch (e) {
       if (e.response?.data is Map) {
         final data = e.response!.data as Map;
-        throw Exception(data['message']?.toString() ?? 'Gagal memuat daftar petani.');
+        throw Exception(
+          data['message']?.toString() ?? 'Gagal memuat daftar petani.',
+        );
       }
       throw Exception('Tidak dapat terhubung ke server.');
     } catch (_) {
@@ -48,7 +50,9 @@ class BuyerHomeService {
     } on DioException catch (e) {
       if (e.response?.data is Map) {
         final data = e.response!.data as Map;
-        throw Exception(data['message']?.toString() ?? 'Gagal memuat kategori.');
+        throw Exception(
+          data['message']?.toString() ?? 'Gagal memuat kategori.',
+        );
       }
       throw Exception('Tidak dapat terhubung ke server.');
     } catch (_) {

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
+import 'package:tandur/core/widgets/skeleton_box.dart';
 import '../models/buyer_home_data.dart';
 
 /// Verified farmers horizontal scroll section.
@@ -55,12 +56,7 @@ class VerifiedFarmersSection extends StatelessWidget {
 
         // ── State handling ──
         if (isLoading)
-          SizedBox(
-            height: 160,
-            child: const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            ),
-          )
+          const _VerifiedFarmersSkeleton()
         else if (errorMessage != null)
           SizedBox(
             height: 160,
@@ -149,7 +145,7 @@ class _FarmerCard extends StatelessWidget {
                         child: Image.network(
                           farmer.avatarUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(
+                          errorBuilder: (context, error, stackTrace) => const Icon(
                             Icons.person_rounded,
                             color: AppColors.outline,
                             size: 28,
@@ -226,6 +222,62 @@ class _FarmerCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _VerifiedFarmersSkeleton extends StatelessWidget {
+  const _VerifiedFarmersSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 160,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 4,
+        separatorBuilder: (context, index) => const SizedBox(width: 12),
+        itemBuilder: (context, index) => Container(
+          width: 130,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.outlineVariant.withValues(alpha: 0.5),
+            ),
+          ),
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SkeletonBox(
+                width: 56,
+                height: 56,
+                radius: 28,
+              ),
+              SizedBox(height: 12),
+              SkeletonBox(
+                width: 80,
+                height: 14,
+                radius: 4,
+              ),
+              SizedBox(height: 6),
+              SkeletonBox(
+                width: 60,
+                height: 10,
+                radius: 3,
+              ),
+              SizedBox(height: 10),
+              SkeletonBox(
+                width: 40,
+                height: 12,
+                radius: 4,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
