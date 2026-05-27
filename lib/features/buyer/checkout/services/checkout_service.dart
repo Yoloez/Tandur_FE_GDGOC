@@ -1,24 +1,37 @@
 import 'package:dio/dio.dart';
 import 'package:tandur/core/network/api_client.dart';
-import 'package:tandur/features/buyer/checkout/models/transaction_model.dart';
 
 class CheckoutService {
-  /// Fetches the latest transaction (or all transactions) from GET /transactions.
-  /// For checkout, we assume we need to show the details from the first transaction in the list,
-  /// or filter to the 'menunggu' one if needed. Let's just return the latest.
-  static Future<TransactionModel?> fetchLatestTransaction() async {
+  const CheckoutService._();
+
+  /// POST /transactions/checkout — Create a new checkout transaction.
+  static Future<Map<String, dynamic>> checkout({
+    required String petaniId,
+    required String tanggalPengambilan,
+    required String metodePembayaran,
+    required String status,
+    required int totalHarga,
+    required List<Map<String, dynamic>> items,
+  }) async {
     try {
-      final response = await ApiClient.dio.get('/transactions');
-      final List<dynamic> data = response.data;
-      if (data.isNotEmpty) {
-        // Assuming the first one is the relevant one, or we filter by status
-        // Let's just take the first one or the latest one
-        return TransactionModel.fromJson(data.first);
-      }
-      return null;
+      final response = await ApiClient.dio.post(
+        'transactions/checkout',
+        data: {
+          'petaniId': petaniId,
+          'tanggalPengambilan': tanggalPengambilan,
+          'metodePembayaran': metodePembayaran,
+          'status': status,
+          'totalHarga': totalHarga,
+          'items': items,
+        },
+      );
+      return response.data is Map<String, dynamic>
+          ? response.data
+          : <String, dynamic>{};
     } on DioException catch (e) {
-      if (e.response != null) {
-        throw Exception(e.response?.data['message'] ?? 'Gagal mengambil data transaksi');
+      if (e.response?.data is Map) {
+        final data = e.response!.data as Map;
+        throw Exception(data['message']?.toString() ?? 'Gagal melakukan checkout');
       }
       throw Exception('Kesalahan jaringan');
     }

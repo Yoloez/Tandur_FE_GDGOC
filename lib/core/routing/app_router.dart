@@ -21,6 +21,8 @@ import 'package:tandur/features/buyer/cart/cart_screen.dart';
 import 'package:tandur/features/buyer/checkout/checkout_screen.dart';
 import 'package:tandur/features/buyer/market/buyer_market_screen.dart';
 import 'package:tandur/features/buyer/farmers/farmer_list_screen.dart';
+import 'package:tandur/features/buyer/orders/buyer_orders_screen.dart';
+import 'package:tandur/features/buyer/orders/buyer_order_detail_screen.dart';
 
 class AppRoutes {
   static const String splash = 'splash';
@@ -234,6 +236,15 @@ class AppRouter {
         builder: (context, state) => const CheckoutScreen(),
       ),
 
+      // ── Buyer Orders Detail (no bottom nav) ──
+      GoRoute(
+        name: 'buyer-order-detail',
+        path: '/buyer/orders/:id',
+        builder: (context, state) => BuyerOrderDetailScreen(
+          transactionId: state.pathParameters['id'] ?? '',
+        ),
+      ),
+
       // ── Farmer List (no bottom nav) ──
       GoRoute(
         name: AppRoutes.farmerList,
@@ -331,12 +342,12 @@ class AppRouter {
               ),
             ],
           ),
-          // Empty branch for 'Pantau' to match bottom nav index 2
+          // Branch for 'Pesanan' to match bottom nav index 2
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/buyer/pantau',
-                builder: (context, state) => const Scaffold(body: Center(child: Text('Fitur belum tersedia.'))),
+                path: '/buyer/orders',
+                builder: (context, state) => const BuyerOrdersScreen(),
               ),
             ],
           ),

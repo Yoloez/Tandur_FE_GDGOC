@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:tandur/features/auth/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ import 'package:provider/provider.dart';
 // lib/main.dart
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
   await dotenv.load(fileName: '.env');
   // await OnboardingPrefs.reset();
   SystemChrome.setSystemUIOverlayStyle(

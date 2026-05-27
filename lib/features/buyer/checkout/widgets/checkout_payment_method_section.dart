@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tandur/core/constants/color.dart';
 
+/// Shows the payment method – currently only COD.
 class CheckoutPaymentMethodSection extends StatelessWidget {
   const CheckoutPaymentMethodSection({super.key});
 
@@ -14,7 +15,7 @@ class CheckoutPaymentMethodSection extends StatelessWidget {
           children: [
             const Icon(
               Icons.payments_outlined,
-              color: AppColors.onSurfaceVariant,
+              color: AppColors.primary,
               size: 20,
             ),
             const SizedBox(width: 8),
@@ -23,7 +24,7 @@ class CheckoutPaymentMethodSection extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.onSurfaceVariant,
+                color: AppColors.onSurface,
               ),
             ),
           ],
@@ -36,39 +37,41 @@ class CheckoutPaymentMethodSection extends StatelessWidget {
             color: AppColors.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.outlineVariant.withValues(alpha: 0.5),
+              color: AppColors.primary.withValues(alpha: 0.4),
+              width: 1.5,
             ),
           ),
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryFixed.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: AppColors.primaryDark,
+                  Icons.handshake_outlined,
+                  color: AppColors.primary,
+                  size: 22,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'E-Wallet - GoPay',
+                      'Cash on Delivery (COD)',
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: AppColors.onSurface,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
-                      'Saldo: Rp 150.000',
+                      'Bayar langsung saat pengambilan',
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
@@ -78,9 +81,18 @@ class CheckoutPaymentMethodSection extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.onSurfaceVariant,
+              Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_rounded,
+                  size: 14,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
