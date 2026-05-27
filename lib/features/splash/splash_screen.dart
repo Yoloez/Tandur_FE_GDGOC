@@ -7,6 +7,9 @@ import 'package:tandur/core/services/onboarding_prefs.dart';
 
 import 'package:tandur/features/auth/providers/auth_provider.dart';
 
+/// Ubah versi aplikasi di sini
+const String appVersion = "1.0.0";
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -74,48 +77,70 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: FadeTransition(
-          opacity: _fadeIn,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // ── Logo ──
-              Image.asset(
-                'assets/images/tandur-logo-no-bg.png',
-                width: 200,
-                height: 200,
-                fit: BoxFit.contain,
+      body: Stack(
+        children: [
+          Center(
+            child: FadeTransition(
+              opacity: _fadeIn,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ── Logo ──
+                  Image.asset(
+                    'assets/images/tandur-logo-no-bg.png',
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.contain,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── App name ──
+                  Text(
+                    'Tandur',
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // ── Tagline ──
+                  Text(
+                    'Digital Agronomy Ecosystem',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.outline,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
               ),
-
-              const SizedBox(height: 20),
-
-              // ── App name ──
-              Text(
-                'Tandur',
-                style: GoogleFonts.beVietnamPro(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                  letterSpacing: -0.3,
-                ),
-              ),
-
-              const SizedBox(height: 6),
-
-              // ── Tagline ──
-              Text(
-                'Digital Agronomy Ecosystem',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.outline,
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            bottom: 32,
+            left: 0,
+            right: 0,
+            child: FadeTransition(
+              opacity: _fadeIn,
+              child: Text(
+                'Versi $appVersion',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.outline,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
