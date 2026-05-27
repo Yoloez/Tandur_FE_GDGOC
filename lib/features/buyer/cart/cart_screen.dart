@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tandur/core/constants/color.dart';
 import 'package:tandur/core/routing/app_router.dart';
+import 'package:tandur/features/buyer/cart/models/cart_model.dart';
 import 'package:tandur/features/buyer/cart/providers/cart_provider.dart';
 import 'package:tandur/features/buyer/cart/widgets/cart_item_card.dart';
 
@@ -189,7 +190,7 @@ class _CartScreenState extends State<CartScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(20),
               children: [
-                ...provider.items.map((item) => CartItemCard(item: item)),
+                ..._buildGroupedItems(provider),
 
                 const SizedBox(height: 16),
 
@@ -383,6 +384,20 @@ class _CartScreenState extends State<CartScreen> {
                 const Spacer(),
                 ElevatedButton(
                   onPressed: () {
+                    final selectedItems = provider.items.where((i) => provider.selectedCartItemIds.contains(i.id)).toList();
+                    if (selectedItems.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Pilih minimal satu produk untuk di-checkout')),
+                      );
+                      return;
+                    }
+
+                    final selectedFarmers = selectedItems.map((i) => i.product.petaniId).toSet();
+                    if (selectedFarmers.length > 1) {
+                      _showMultipleFarmerWarning();
+                      return;
+                    }
+                    
                     context.pushNamed(AppRoutes.buyerCheckout);
                   },
                   style: ElevatedButton.styleFrom(
@@ -408,6 +423,153 @@ class _CartScreenState extends State<CartScreen> {
             );
           },
         ),
+      ),
+    );
+  }
+
+  List<Widget> _buildGroupedItems(CartProvider provider) {
+    final groupedItems = <String, List<CartItem>>{};
+    for (final item in provider.items) {
+      groupedItems.putIfAbsent(item.product.petaniId, () => []).add(item);
+    }
+
+    final widgets = <Widget>[];
+    for (final entry in groupedItems.entries) {
+      final petaniId = entry.key;
+      final items = entry.value;
+      final namaPetani = items.first.product.namaPetani;
+
+      final isAllFarmerItemsSelected = items.every((i) => provider.selectedCartItemIds.contains(i.id));
+
+      widgets.add(
+        Container(
+          margin: const EdgeInsets.only(bottom: 24),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.outlineVariant.withValues(alpha: 0.5),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: isAllFarmerItemsSelected,
+                      onChanged: (val) {
+                        provider.toggleFarmerSelection(petaniId, val ?? false);
+                      },
+                      activeColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      side: const BorderSide(color: AppColors.outlineVariant, width: 1.5),
+                    ),
+                    const Icon(
+                      Icons.storefront_outlined,
+                      size: 22,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      namaPetani,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                height: 1,
+              ),
+              // Items
+              ...items.map((item) {
+                final isSelected = provider.selectedCartItemIds.contains(item.id);
+                return CartItemCard(
+                  item: item,
+                  isSelected: isSelected,
+                  onChanged: (val) {
+                    provider.toggleSelection(item.id);
+                  },
+                );
+              }),
+            ],
+          ),
+        ),
+      );
+    }
+    return widgets;
+  }
+
+  void _showMultipleFarmerWarning() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.errorContainer,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.shopping_cart_checkout_rounded,
+                color: AppColors.error,
+                size: 32,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Oops! Tidak Bisa Checkout',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.onSurface,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Saat ini kamu belum bisa checkout produk dari 2 petani yang berbeda sekaligus. Silakan pilih produk dari satu petani saja untuk melanjutkan pembayaran.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: AppColors.onSurfaceVariant,
+            height: 1.5,
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Mengerti',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

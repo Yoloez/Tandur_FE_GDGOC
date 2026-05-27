@@ -14,20 +14,64 @@ class CartProvider extends ChangeNotifier {
   CartProvider._internal();
 
   final List<CartItem> _items = [];
+  final Set<String> _selectedCartItemIds = {};
   bool _isLoading = false;
   String? _errorMessage;
 
   List<CartItem> get items => _items;
+  Set<String> get selectedCartItemIds => _selectedCartItemIds;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  int get totalItems => _items.fold(0, (sum, item) => sum + item.jumlah);
 
-  // Real pricing from API (harga per item)
-  int get subtotal => _items.fold(
-        0,
-        (sum, item) => sum + ((item.product.harga ?? 0) * item.jumlah),
-      );
+  // Selected totals
+  int get totalItems => _items
+      .where((item) => _selectedCartItemIds.contains(item.id))
+      .fold(0, (sum, item) => sum + item.jumlah);
+
+  int get subtotal => _items
+      .where((item) => _selectedCartItemIds.contains(item.id))
+      .fold(0, (sum, item) => sum + ((item.product.harga ?? 0) * item.jumlah));
+      
   int get totalTagihan => subtotal;
+
+  bool get isAllSelected =>
+      _items.isNotEmpty && _selectedCartItemIds.length == _items.length;
+
+  /// Returns only the items that are currently selected (checked).
+  List<CartItem> get selectedItems =>
+      _items.where((item) => _selectedCartItemIds.contains(item.id)).toList();
+
+  // ────────────────────────────────────────────────
+  // Selection Operations
+  // ────────────────────────────────────────────────
+
+  void toggleSelection(String cartId) {
+    if (_selectedCartItemIds.contains(cartId)) {
+      _selectedCartItemIds.remove(cartId);
+    } else {
+      _selectedCartItemIds.add(cartId);
+    }
+    notifyListeners();
+  }
+
+  void toggleFarmerSelection(String petaniId, bool isSelected) {
+    final farmerItems = _items.where((i) => i.product.petaniId == petaniId);
+    if (isSelected) {
+      _selectedCartItemIds.addAll(farmerItems.map((i) => i.id));
+    } else {
+      _selectedCartItemIds.removeAll(farmerItems.map((i) => i.id));
+    }
+    notifyListeners();
+  }
+
+  void selectAll(bool isSelected) {
+    if (isSelected) {
+      _selectedCartItemIds.addAll(_items.map((i) => i.id));
+    } else {
+      _selectedCartItemIds.clear();
+    }
+    notifyListeners();
+  }
 
   // ────────────────────────────────────────────────
   // API Operations

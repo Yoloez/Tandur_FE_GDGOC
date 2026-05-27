@@ -41,6 +41,9 @@ class CartItem {
 class CartProduct {
   final String id;
   final String petaniId;
+  final String namaPetani;
+  final String alamatPetani;
+  final String fotoPetani;
   final String namaProduk;
   final String kategoriId;
   final String deskripsi;
@@ -50,10 +53,14 @@ class CartProduct {
   final String fotoUrl; // first URL from the list
   final String status;
   final String? createdAt;
+  final Map<String, dynamic>? titikKoordinat;
 
   const CartProduct({
     required this.id,
     required this.petaniId,
+    required this.namaPetani,
+    required this.alamatPetani,
+    required this.fotoPetani,
     required this.namaProduk,
     required this.kategoriId,
     required this.deskripsi,
@@ -63,6 +70,7 @@ class CartProduct {
     required this.fotoUrl,
     required this.status,
     this.createdAt,
+    this.titikKoordinat,
   });
 
   /// Formatted price string. Falls back to "-" when harga is null.
@@ -101,9 +109,17 @@ class CartProduct {
           double.tryParse(rawHarga.toString())?.toInt();
     }
 
+    // Extract farmer profile data
+    final petaniProfile = json['petani']?['profile'] as Map<String, dynamic>?;
+
     return CartProduct(
       id: json['id']?.toString() ?? '',
       petaniId: json['petaniId']?.toString() ?? '',
+      namaPetani: petaniProfile?['namaLengkap']?.toString() ?? 
+                  json['petani']?['nama']?.toString() ?? 
+                  'Mitra Tani',
+      alamatPetani: petaniProfile?['alamatLengkap']?.toString() ?? '',
+      fotoPetani: petaniProfile?['fotoProfil']?.toString() ?? '',
       namaProduk: json['namaProduk']?.toString() ?? 'Produk',
       kategoriId: json['kategoriId']?.toString() ?? '',
       deskripsi: json['deskripsi']?.toString() ?? '',
@@ -113,6 +129,7 @@ class CartProduct {
       fotoUrl: fotoUrl,
       status: json['status']?.toString() ?? '',
       createdAt: json['createdAt']?.toString(),
+      titikKoordinat: json['petani']?['titikKoordinat'] as Map<String, dynamic>?,
     );
   }
 }

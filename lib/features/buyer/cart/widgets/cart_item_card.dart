@@ -6,81 +6,56 @@ import 'package:tandur/features/buyer/cart/providers/cart_provider.dart';
 
 class CartItemCard extends StatelessWidget {
   final CartItem item;
+  final bool isSelected;
+  final ValueChanged<bool?> onChanged;
   final VoidCallback? onDelete;
 
-  const CartItemCard({super.key, required this.item, this.onDelete});
+  const CartItemCard({
+    super.key,
+    required this.item,
+    required this.isSelected,
+    required this.onChanged,
+    this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Farmer Header ──
-          Row(
-            children: [
-              const Icon(
-                Icons.storefront_outlined,
-                size: 20,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Mitra Tani',
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.onSurface,
-                ),
-              ),
-              const SizedBox(width: 8),
-              if (item.product.tipeStok.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '/ ${item.product.tipeStok}',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // ── Item Card ──
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.outlineVariant.withValues(alpha: 0.5),
-              ),
-            ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: isSelected 
+            ? AppColors.primary.withValues(alpha: 0.05)
+            : AppColors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.5)
+              : AppColors.outlineVariant.withValues(alpha: 0.5),
+          width: isSelected ? 1.5 : 1.0,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => onChanged(!isSelected),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Product Image
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    width: 72,
-                    height: 72,
+                    width: 64,
+                    height: 64,
                     color: AppColors.surfaceContainerHighest,
                     child: _buildProductImage(),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
+                
                 // Product Details
                 Expanded(
                   child: Column(
@@ -89,109 +64,73 @@ class CartItemCard extends StatelessWidget {
                       Text(
                         item.product.namaProduk,
                         style: GoogleFonts.inter(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.onSurface,
                         ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         item.product.priceFormatted,
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.primary,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
+                      
+                      // Actions (Delete & Qty)
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          // Delete Button
                           GestureDetector(
                             onTap: () => _confirmDelete(context),
-                            child: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: AppColors.error.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.delete_outline_rounded,
-                                size: 18,
-                                color: AppColors.error,
-                              ),
+                            child: const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 20,
+                              color: AppColors.error,
                             ),
                           ),
+                          const SizedBox(width: 16),
+                          
                           // Qty Controller
                           Container(
+                            height: 28,
                             decoration: BoxDecoration(
                               color: AppColors.surfaceContainerLowest,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                color: AppColors.outlineVariant.withValues(
-                                  alpha: 0.5,
-                                ),
+                                color: AppColors.outlineVariant.withValues(alpha: 0.5),
                               ),
                             ),
                             child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 InkWell(
-                                  onTap: () {
-                                    CartProvider.instance.decrementQuantity(
-                                      item.id,
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: () => CartProvider.instance.decrementQuantity(item.id),
+                                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
                                   child: const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 4,
-                                    ),
-                                    child: Text(
-                                      '-',
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
+                                    padding: EdgeInsets.symmetric(horizontal: 10),
+                                    child: Icon(Icons.remove, size: 14, color: AppColors.primary),
                                   ),
                                 ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 4),
-                                  child: Text(
-                                    '${item.jumlah}',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.onSurface,
-                                    ),
+                                Text(
+                                  '${item.jumlah}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.onSurface,
                                   ),
                                 ),
                                 InkWell(
-                                  onTap: () {
-                                    CartProvider.instance.incrementQuantity(
-                                      item.id,
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: () => CartProvider.instance.incrementQuantity(item.id),
+                                  borderRadius: const BorderRadius.horizontal(right: Radius.circular(14)),
                                   child: const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 4,
-                                    ),
-                                    child: Text(
-                                      '+',
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
+                                    padding: EdgeInsets.symmetric(horizontal: 10),
+                                    child: Icon(Icons.add, size: 14, color: AppColors.primary),
                                   ),
                                 ),
                               ],
@@ -202,10 +141,29 @@ class CartItemCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                
+                // Checkbox on the right
+                Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 4),
+                  child: Checkbox(
+                    value: isSelected,
+                    onChanged: onChanged,
+                    activeColor: AppColors.primary,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    side: BorderSide(
+                      color: AppColors.outlineVariant,
+                      width: 1.5,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
